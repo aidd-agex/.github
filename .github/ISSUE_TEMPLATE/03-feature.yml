@@ -1,0 +1,187 @@
+name: Feature
+description: Create a Feature that belongs to a Story and can have Subtasks
+title: "[Feature]: "
+labels: [feature, needs-triage]
+assignees: []
+
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        ## ⚡ Feature - Specific Functionality
+        A Feature is a specific piece of functionality that belongs to a Story.
+        Features can be broken down into Subtasks.
+        
+  - type: input
+    id: parent_story
+    attributes:
+      label: "⬆️ Parent Story"
+      description: |
+        Link to parent Story issue.
+        Same repo: #123 | Other repo: project-planning#123 or repo-name#456
+      placeholder: "#123 or project-planning#123"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Critical
+        - Major
+        - Minor
+        - Trivial
+    validations:
+      required: true
+
+  - type: input
+    id: product_owner
+    attributes:
+      label: Product Owner
+      description: "Enter Product Owner GitHub username(s) with @mention"
+      placeholder: "@username"
+    validations:
+      required: false
+      
+  - type: input
+    id: dev_owner
+    attributes:
+      label: Dev Owner
+      description: "Enter Dev Owner GitHub username(s) with @mention"
+      placeholder: "@username"
+    validations:
+      required: false
+
+  - type: input
+    id: qa_owner
+    attributes:
+      label: QA Owner
+      description: "Enter QA Owner GitHub username(s) with @mention"
+      placeholder: "@username"
+    validations:
+      required: false
+      
+  - type: input
+    id: component
+    attributes:
+      label: Component(s)
+      description: "Enter relevant component(s) separated by commas"
+      placeholder: "Web, Backend"
+    validations:
+      required: true
+
+  - type: textarea
+    id: feature_spec
+    attributes:
+      label: "Feature Specification"
+      description: "Please fill in the details for the requested feature."
+      value: |
+        **Background / Motivation**
+        - Why is this feature needed? What problem does it solve?
+        - Give examples of current limitations or scenarios.
+  
+        **Goals / Expected Outcome**
+        - What is the desired effect or result after implementing this feature?
+  
+        **Feature Description / Detailed Requirements**
+        - Describe the behavior, logic, and boundaries of the feature.
+        - Be as clear as possible, avoid ambiguity.
+        
+        **Technical Approach**
+        - High-level technical implementation approach
+        - Key technical considerations
+
+  - type: input
+    id: doc_link
+    attributes:
+      label: Document Link
+      placeholder: e.g. https://github.com/
+    validations:
+      required: false
+
+  - type: input
+    id: ux_link
+    attributes:
+      label: UX Design Link
+      placeholder: e.g. https://figma.com/design
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: "<br>"
+      
+  - type: markdown
+    attributes:
+      value: "---"
+      
+  - type: markdown
+    attributes:
+      value: "### 📝 Child Subtasks"    
+      
+  - type: textarea
+    id: child_subtasks
+    attributes:
+      label: Related Subtasks
+      description: "List the Subtask issues that belong to this Feature (add issue numbers as you create them)"
+      placeholder: |
+        - #789 Subtask: API endpoint implementation
+        - #790 Subtask: Unit tests
+        - #791 Subtask: Integration tests
+        - #792 Subtask: Documentation update
+      
+  - type: markdown
+    attributes:
+      value: "<br>"
+      
+  - type: markdown
+    attributes:
+      value: "---"
+      
+  - type: markdown
+    attributes:
+      value: "### Linkage"    
+      
+  - type: input
+    id: linked_issue
+    attributes:
+      label: Linked Backlog / Issue
+      description: "Reference another backlog item or GitHub issue (e.g., #123 or JIRA-456)"
+      placeholder: "Enter related backlog/issue number"
+      
+  - type: input
+    id: linked_test
+    attributes:
+      label: Linked Test
+      placeholder: "Enter related test report id or link"
+  
+  - type: markdown
+    attributes:
+      value: "<br>"
+      
+  - type: markdown
+    attributes:
+      value: "---"
+      
+  - type: markdown
+    attributes:
+      value: "### 📊 Dev Effort"
+      
+  - type: input
+    id: estimate
+    attributes:
+      label: Estimate Effort
+      placeholder: "(eg. 3w 4d 12h)"
+    validations:
+      required: false
+      
+  - type: input
+    id: actual 
+    attributes:
+      label: Actual Effort
+      placeholder: "(eg. 3w 4d 12h)"
+    validations:
+      required: false
+

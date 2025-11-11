@@ -1,0 +1,146 @@
+name: Epic
+description: Create a high-level Epic that groups multiple Stories
+title: "[Epic]: "
+labels: [epic, needs-triage]
+assignees: []
+
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        ## 📋 Epic - High-Level Requirement
+        An Epic represents a large body of work that can be broken down into multiple Stories.
+        
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Critical
+        - Major
+        - Minor
+        - Trivial
+    validations:
+      required: true
+
+  - type: input
+    id: product_owner
+    attributes:
+      label: Product Owner
+      description: "Enter Product Owner GitHub username(s) with @mention (e.g., @username or @user1 @user2)"
+      placeholder: "@username"
+    validations:
+      required: false
+      
+  - type: input
+    id: dev_owner
+    attributes:
+      label: Dev Owner
+      description: "Enter Dev Owner GitHub username(s) with @mention (e.g., @username or @user1 @user2)"
+      placeholder: "@username"
+    validations:
+      required: false
+
+  - type: input
+    id: qa_owner
+    attributes:
+      label: QA Owner
+      description: "Enter QA Owner GitHub username(s) with @mention (e.g., @username or @user1 @user2)"
+      placeholder: "@username"
+    validations:
+      required: false
+      
+  - type: input
+    id: component
+    attributes:
+      label: Component(s)
+      description: "Enter relevant component(s) separated by commas (e.g., Web, Backend, iOS App)"
+      placeholder: "Web, Backend"
+    validations:
+      required: true
+
+  - type: textarea
+    id: epic_description
+    attributes:
+      label: "Epic Description"
+      description: "Describe the high-level goal and scope of this Epic."
+      value: |
+        **Business Objective**
+        - What is the high-level business goal?
+        - What value does this bring to users/business?
+  
+        **Scope**
+        - What is included in this Epic?
+        - What is out of scope?
+  
+        **Success Criteria**
+        - How will we measure success?
+        - What are the key metrics?
+
+  - type: input
+    id: doc_link
+    attributes:
+      label: Document Link
+      placeholder: e.g. https://github.com/
+    validations:
+      required: false
+
+  - type: input
+    id: ux_link
+    attributes:
+      label: UX Design Link
+      placeholder: e.g. https://figma.com/design
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: "<br>"
+      
+  - type: markdown
+    attributes:
+      value: "---"
+      
+  - type: markdown
+    attributes:
+      value: "### 📦 Child Stories"    
+      
+  - type: textarea
+    id: child_stories
+    attributes:
+      label: Related Stories
+      description: "List the Story issues that belong to this Epic (add issue numbers as you create them)"
+      placeholder: |
+        - #123 Story: User Authentication
+        - #124 Story: User Profile Management
+        - #125 Story: User Settings
+
+  - type: markdown
+    attributes:
+      value: "<br>"
+      
+  - type: markdown
+    attributes:
+      value: "---"
+      
+  - type: markdown
+    attributes:
+      value: "### 📊 Effort Tracking"
+      
+  - type: input
+    id: estimate
+    attributes:
+      label: Estimate Effort
+      placeholder: "(eg. 3w 4d 12h)"
+    validations:
+      required: false
+      
+  - type: input
+    id: actual 
+    attributes:
+      label: Actual Effort
+      placeholder: "(eg. 3w 4d 12h)"
+    validations:
+      required: false
+

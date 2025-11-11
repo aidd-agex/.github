@@ -1,0 +1,176 @@
+name: Bug Report
+description: Report a bug in the project
+title: "[Bug]: "
+labels: [bug, needs-triage]
+assignees: []
+
+body:    
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Critical
+        - Major
+        - Minor
+        - Trivial
+    validations:
+      required: true
+      
+  - type: input
+    id: component
+    attributes:
+      label: Component(s)
+      description: "Enter affected component(s) separated by commas"
+      placeholder: "Web, Backend"
+    validations:
+      required: true
+      
+  - type: input
+    id: product_owner
+    attributes:
+      label: Product Owner
+      description: "Enter Product Owner GitHub username(s) with @mention"
+      placeholder: "@username"
+    validations:
+      required: false
+      
+  - type: input
+    id: dev_owner
+    attributes:
+      label: Dev Owner
+      description: "Enter Dev Owner GitHub username(s) with @mention"
+      placeholder: "@username"
+    validations:
+      required: false
+
+  - type: input
+    id: qa_owner
+    attributes:
+      label: QA Owner
+      description: "Enter QA Owner GitHub username(s) with @mention"
+      placeholder: "@username"
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Descriptions
+      description: Describe the steps to reproduce the behavior
+      value: |
+        **Steps to Reproduce:**
+        1. Go to '...'
+        2. Click on '....'
+        3. See error
+        
+        **Expected Behavior:**
+        
+        **Actual Behavior:**
+
+        
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs 
+    attributes:
+     label: Logs / Screenshots
+    validations:
+     required: false
+
+  - type: markdown
+    attributes:
+      value: "<br>"
+  - type: markdown
+    attributes:
+      value: "---"    
+  - type: markdown
+    attributes:
+      value: "### Environment"
+      
+  - type: input
+    id: build_info
+    attributes:
+      label: Build Information
+      placeholder: e.g. https://github.com/org/repo/actions/runs/1234567890, ios 1.0(build 105), etc.
+    validations:
+      required: false
+      
+  - type: input
+    id: device_type
+    attributes:
+      label: Device Type
+      description: "Enter device type(s) separated by commas"
+      placeholder: "Mac, iPhone, Android Phone"
+    validations:
+      required: true
+      
+  - type: input
+    id: browser_app
+    attributes:
+      label: Browser / App
+      description: "Enter browser or app name"
+      placeholder: "Chrome, Safari, App"
+        
+  - type: input
+    id: os_version
+    attributes:
+      label: "OS / App version"
+      placeholder: "iOS 26, chrome: 141.0.7390.77, etc."    
+
+      
+  - type: markdown
+    attributes:
+      value: "<br>"
+      
+  - type: markdown
+    attributes:
+      value: "---"
+      
+    
+  - type: markdown
+    attributes:
+      value: "### Linkage"    
+      
+  - type: input
+    id: linked_issue
+    attributes:
+      label: Linked Backlog / Issue
+      description: "Reference another backlog item or GitHub issue (e.g., #123 or JIRA-456)"
+      placeholder: "Enter related backlog/issue number"
+      
+  - type: input
+    id: linked_test
+    attributes:
+      label: Linked Test
+      placeholder: "Enter related test report id or link"
+  
+  - type: markdown
+    attributes:
+      value: "<br>"
+      
+  - type: markdown
+    attributes:
+      value: "---"
+      
+  - type: markdown
+    attributes:
+      value: "### Fix Effort"
+      
+  - type: input
+    id: estimate
+    attributes:
+      label: Estimate Effort
+      placeholder: "(eg. 3w 4d 12h)"
+    validations:
+      required: false
+      
+  - type: input
+    id: actual 
+    attributes:
+      label: Actual Effort
+      placeholder: "(eg. 3w 4d 12h)"
+    validations:
+      required: false
+

@@ -1,0 +1,165 @@
+name: Subtask
+description: Create a Subtask that belongs to a Feature
+title: "[Subtask]: "
+labels: [subtask, needs-triage]
+assignees: []
+
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        ## 📝 Subtask - Atomic Work Item
+        A Subtask is a small, atomic piece of work that belongs to a Feature.
+        Subtasks are the lowest level in the hierarchy and should be completable in a short time.
+        
+  - type: input
+    id: parent_feature
+    attributes:
+      label: "⬆️ Parent Feature"
+      description: |
+        Link to parent Feature issue.
+        Same repo: #123 | Other repo: repo-name#456
+      placeholder: "#123 or ai-service#456"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Critical
+        - Major
+        - Minor
+        - Trivial
+    validations:
+      required: true
+
+  - type: input
+    id: dev_owner
+    attributes:
+      label: Dev Owner
+      description: "Enter Dev Owner GitHub username(s) with @mention"
+      placeholder: "@username"
+    validations:
+      required: false
+
+  - type: input
+    id: qa_owner
+    attributes:
+      label: QA Owner
+      description: "Enter QA Owner GitHub username(s) with @mention"
+      placeholder: "@username"
+    validations:
+      required: false
+      
+  - type: input
+    id: component
+    attributes:
+      label: Component(s)
+      description: "Enter relevant component(s) separated by commas"
+      placeholder: "Web, Backend"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: subtask_type
+    attributes:
+      label: Subtask Type
+      description: "What type of work is this?"
+      options:
+        - Implementation
+        - Bug Fix
+        - Testing
+        - Documentation
+        - Refactoring
+        - Research
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: subtask_description
+    attributes:
+      label: "Subtask Description"
+      description: "Describe the specific work to be done."
+      value: |
+        **Task Description**
+        - What needs to be done?
+        - Specific implementation details
+  
+        **Definition of Done**
+        - [ ] Checklist item 1
+        - [ ] Checklist item 2
+        - [ ] Code reviewed
+        - [ ] Tests pass
+        - [ ] Documentation updated (if needed)
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical_notes
+    attributes:
+      label: "Technical Notes"
+      description: "Any technical details, code snippets, or implementation notes"
+      placeholder: |
+        - File locations
+        - Function/method names
+        - Dependencies
+        - Technical constraints
+
+  - type: markdown
+    attributes:
+      value: "<br>"
+      
+  - type: markdown
+    attributes:
+      value: "---"
+      
+  - type: markdown
+    attributes:
+      value: "### Linkage"    
+      
+  - type: input
+    id: linked_issue
+    attributes:
+      label: Linked Issue
+      description: "Reference related issues"
+      placeholder: "#123"
+      
+  - type: input
+    id: linked_pr
+    attributes:
+      label: Linked Pull Request
+      description: "Link to PR when work begins"
+      placeholder: "#456"
+  
+  - type: markdown
+    attributes:
+      value: "<br>"
+      
+  - type: markdown
+    attributes:
+      value: "---"
+      
+  - type: markdown
+    attributes:
+      value: "### 📊 Dev Effort"
+      
+  - type: input
+    id: estimate
+    attributes:
+      label: Estimate Effort
+      placeholder: "(eg. 4h, 1d, 2d)"
+    validations:
+      required: false
+      
+  - type: input
+    id: actual 
+    attributes:
+      label: Actual Effort
+      placeholder: "(eg. 4h, 1d, 2d)"
+    validations:
+      required: false
+

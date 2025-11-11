@@ -1,0 +1,182 @@
+name: Story
+description: Create a Story that belongs to an Epic and contains Features
+title: "[Story]: "
+labels: [story, needs-triage]
+assignees: []
+
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        ## 📖 Story - User-Focused Requirement
+        A Story is a user-focused requirement that can be broken down into multiple Features.
+        Stories belong to an Epic.
+        
+  - type: input
+    id: parent_epic
+    attributes:
+      label: "⬆️ Parent Epic"
+      description: |
+        Link to parent Epic issue.
+        Same repo: #123 | Other repo: project-planning#123 or repo-name#456
+      placeholder: "#123 or project-planning#123"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Critical
+        - Major
+        - Minor
+        - Trivial
+    validations:
+      required: true
+
+  - type: input
+    id: product_owner
+    attributes:
+      label: Product Owner
+      description: "Enter Product Owner GitHub username(s) with @mention"
+      placeholder: "@username"
+    validations:
+      required: false
+      
+  - type: input
+    id: dev_owner
+    attributes:
+      label: Dev Owner
+      description: "Enter Dev Owner GitHub username(s) with @mention"
+      placeholder: "@username"
+    validations:
+      required: false
+
+  - type: input
+    id: qa_owner
+    attributes:
+      label: QA Owner
+      description: "Enter QA Owner GitHub username(s) with @mention"
+      placeholder: "@username"
+    validations:
+      required: false
+      
+  - type: input
+    id: component
+    attributes:
+      label: Component(s)
+      description: "Enter relevant component(s) separated by commas"
+      placeholder: "Web, Backend"
+    validations:
+      required: true
+
+  - type: textarea
+    id: story_description
+    attributes:
+      label: "Story Description"
+      description: "Describe the user story and acceptance criteria."
+      value: |
+        **User Story**
+        As a [type of user], I want [an action] so that [benefit/value].
+  
+        **Acceptance Criteria**
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Criterion 3
+  
+        **Background / Context**
+        - Additional context or background information
+
+  - type: input
+    id: doc_link
+    attributes:
+      label: Document Link
+      placeholder: e.g. https://github.com/
+    validations:
+      required: false
+
+  - type: input
+    id: ux_link
+    attributes:
+      label: UX Design Link
+      placeholder: e.g. https://figma.com/design
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: "<br>"
+      
+  - type: markdown
+    attributes:
+      value: "---"
+      
+  - type: markdown
+    attributes:
+      value: "### 🔧 Child Features"    
+      
+  - type: textarea
+    id: child_features
+    attributes:
+      label: Related Features
+      description: "List the Feature issues that belong to this Story (add issue numbers as you create them)"
+      placeholder: |
+        - #456 Feature: Login API
+        - #457 Feature: Login UI
+        - #458 Feature: Session Management
+
+  - type: markdown
+    attributes:
+      value: "<br>"
+      
+  - type: markdown
+    attributes:
+      value: "---"
+      
+  - type: markdown
+    attributes:
+      value: "### Linkage"    
+      
+  - type: input
+    id: linked_issue
+    attributes:
+      label: Linked Backlog / Issue
+      description: "Reference another backlog item or GitHub issue (e.g., #123 or JIRA-456)"
+      placeholder: "Enter related backlog/issue number"
+      
+  - type: input
+    id: linked_test
+    attributes:
+      label: Linked Test
+      placeholder: "Enter related test report id or link"
+  
+  - type: markdown
+    attributes:
+      value: "<br>"
+      
+  - type: markdown
+    attributes:
+      value: "---"
+      
+  - type: markdown
+    attributes:
+      value: "### 📊 Dev Effort"
+      
+  - type: input
+    id: estimate
+    attributes:
+      label: Estimate Effort
+      placeholder: "(eg. 3w 4d 12h)"
+    validations:
+      required: false
+      
+  - type: input
+    id: actual 
+    attributes:
+      label: Actual Effort
+      placeholder: "(eg. 3w 4d 12h)"
+    validations:
+      required: false
+

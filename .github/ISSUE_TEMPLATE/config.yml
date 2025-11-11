@@ -1,0 +1,14 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📚 Issue Hierarchy Guide
+    url: https://github.com/aidd-agex/.github/blob/main/.github/ISSUE_TEMPLATE/README.md
+    about: |
+      Hierarchy: Epic → Story → Feature → Subtask
+      
+      - Epic: Large body of work (e.g., "User Management System")
+      - Story: User-focused requirement (e.g., "As a user, I want to login...")
+      - Feature: Specific functionality (e.g., "Login API endpoint")
+      - Subtask: Atomic work item (e.g., "Implement password validation")
+      
+      Always link child issues to their parent using the parent fields.
+
