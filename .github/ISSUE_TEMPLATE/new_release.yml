@@ -1,0 +1,44 @@
+name: New Release
+description: Create a new release for staging deployment
+title: "[RELEASE] stg-YYYYMMDD"
+labels: ["release", "staging"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Release Information
+        This template is used to create a new staging release.
+        
+        **Instructions:**
+        1. Update the title to match the release date: `[RELEASE] stg-YYYYMMDD`
+        2. PRs must already be merged to `develop` branch
+        3. Add label `release:plan` to trigger the automation
+        4. The workflow will automatically:
+           - Create branch `stg-YYYYMMDD` from `stg`
+           - Merge `develop` branch into it
+           - Detect all included PRs automatically
+           - Generate release notes with PR details and authors
+           - Create PR to merge back to `stg`
+      
+  - type: textarea
+    id: notes
+    attributes:
+      label: "## Release Notes"
+      description: Additional notes for this release
+      placeholder: |
+        Any additional context, breaking changes, or important notes...
+    validations:
+      required: false
+      
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-release Checklist
+      options:
+        - label: All PRs are already merged to `develop`
+          required: true
+        - label: All the dependencies of the PRs are already changed (e.g. Nacos, Database, etc.)
+          required: true
+        - label: All tests pass on develop
+          required: true
+
