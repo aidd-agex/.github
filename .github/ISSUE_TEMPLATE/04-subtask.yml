@@ -18,9 +18,10 @@ body:
     attributes:
       label: "⬆️ Parent Feature"
       description: |
-        Link to parent Feature issue.
-        Same repo: #123 | Other repo: repo-name#456
-      placeholder: "#123 or ai-service#456"
+        Link to parent Feature issue (supports cross-repo linking).
+        Same repo: #123
+        Cross-repo: ai-service#200, ai-companion-desktop#300, etc.
+      placeholder: "e.g., #789 (same repo) or ai-service#200 (cross-repo)"
     validations:
       required: true
 

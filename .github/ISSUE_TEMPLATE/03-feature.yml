@@ -18,9 +18,10 @@ body:
     attributes:
       label: "⬆️ Parent Story"
       description: |
-        Link to parent Story issue.
-        Same repo: #123 | Other repo: project-planning#123 or repo-name#456
-      placeholder: "#123 or project-planning#123"
+        Link to parent Story issue (supports cross-repo linking).
+        Same repo: #123
+        Cross-repo: project-planning#110, ai-companion-desktop#200, etc.
+      placeholder: "e.g., #456 (same repo) or project-planning#110 (cross-repo)"
     validations:
       required: false
 
@@ -125,12 +126,12 @@ body:
     id: child_subtasks
     attributes:
       label: Related Subtasks
-      description: "List the Subtask issues that belong to this Feature (add issue numbers as you create them)"
+      description: "List the Subtask issues that belong to this Feature (supports cross-repo linking)"
       placeholder: |
-        - #789 Subtask: API endpoint implementation
-        - #790 Subtask: Unit tests
-        - #791 Subtask: Integration tests
-        - #792 Subtask: Documentation update
+        - #789 Subtask: API endpoint implementation (same repo)
+        - #790 Subtask: Unit tests (same repo)
+        - ai-testhub#50 Subtask: E2E tests (cross-repo)
+        - #792 Subtask: Documentation update (same repo)
       
   - type: markdown
     attributes:

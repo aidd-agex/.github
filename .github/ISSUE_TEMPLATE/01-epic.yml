@@ -110,11 +110,11 @@ body:
     id: child_stories
     attributes:
       label: Related Stories
-      description: "List the Story issues that belong to this Epic (add issue numbers as you create them)"
+      description: "List the Story issues that belong to this Epic (supports cross-repo linking)"
       placeholder: |
-        - #123 Story: User Authentication
-        - #124 Story: User Profile Management
-        - #125 Story: User Settings
+        - #123 Story: User Authentication (same repo)
+        - ai-companion-desktop#200 Story: Login UI (cross-repo)
+        - ai-service#150 Story: Auth API (cross-repo)
 
   - type: markdown
     attributes:

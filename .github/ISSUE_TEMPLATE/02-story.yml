@@ -18,9 +18,10 @@ body:
     attributes:
       label: "⬆️ Parent Epic"
       description: |
-        Link to parent Epic issue.
-        Same repo: #123 | Other repo: project-planning#123 or repo-name#456
-      placeholder: "#123 or project-planning#123"
+        Link to parent Epic issue (supports cross-repo linking).
+        Same repo: #123
+        Cross-repo: project-planning#123, ai-service#456, etc.
+      placeholder: "e.g., #123 (same repo) or project-planning#100 (cross-repo)"
     validations:
       required: false
 
@@ -121,11 +122,11 @@ body:
     id: child_features
     attributes:
       label: Related Features
-      description: "List the Feature issues that belong to this Story (add issue numbers as you create them)"
+      description: "List the Feature issues that belong to this Story (supports cross-repo linking)"
       placeholder: |
-        - #456 Feature: Login API
-        - #457 Feature: Login UI
-        - #458 Feature: Session Management
+        - #456 Feature: Login API (same repo)
+        - ai-companion-desktop#300 Feature: Login Form UI (cross-repo)
+        - ai-ninja#100 Feature: Auth Gateway (cross-repo)
 
   - type: markdown
     attributes:
