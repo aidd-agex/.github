@@ -1,0 +1,11 @@
+# Documentation files (kept locally, not committed)
+*.md
+!.github/**/*.md
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
