@@ -1,7 +1,7 @@
 name: Story
 description: Create a Story that belongs to an Epic and contains Features
 title: "[Story]: "
-labels: [story, needs-triage]
+labels: [needs-triage]
 assignees: []
 
 body:
