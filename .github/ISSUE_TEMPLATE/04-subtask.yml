@@ -1,7 +1,7 @@
 name: Subtask
 description: Create a Subtask that belongs to a Feature
 title: "[Subtask]: "
-labels: [subtask, needs-triage]
+labels: [needs-triage]
 assignees: []
 
 body:
