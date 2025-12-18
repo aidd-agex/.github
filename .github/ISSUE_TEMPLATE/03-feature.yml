@@ -1,7 +1,7 @@
 name: Feature
 description: Create a Feature that belongs to a Story and can have Subtasks
 title: "[Feature]: "
-labels: [feature, needs-triage]
+labels: [needs-triage]
 assignees: []
 
 body:
