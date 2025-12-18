@@ -1,7 +1,7 @@
 name: Bug Report
 description: Report a bug in the project
 title: "[Bug]: "
-labels: [bug, needs-triage]
+labels: [needs-triage]
 assignees: []
 
 body:    
