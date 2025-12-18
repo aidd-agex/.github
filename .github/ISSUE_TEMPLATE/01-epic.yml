@@ -1,7 +1,7 @@
 name: Epic
 description: Create a high-level Epic that groups multiple Stories
 title: "[Epic]: "
-labels: [epic, needs-triage]
+labels: [needs-triage]
 assignees: []
 
 body:
