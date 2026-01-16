@@ -17,10 +17,9 @@ body:
     attributes:
       label: Priority
       options:
-        - Critical
-        - Major
-        - Minor
-        - Trivial
+        - P0
+        - P1
+        - P2
     validations:
       required: true
 
