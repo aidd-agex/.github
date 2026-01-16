@@ -1,0 +1,158 @@
+name: Sync Issue Fields to Project
+
+on:
+  issues:
+    types: [opened, edited]
+
+env:
+  PROJECT_NUMBER: 8
+  ORG_NAME: aidd-agex
+
+jobs:
+  sync-to-project:
+    runs-on: ubuntu-latest
+    # Only run for Bug Reports and New Release issues
+    if: contains(github.event.issue.title, '[Bug]') || contains(github.event.issue.title, '[RELEASE]')
+    
+    steps:
+      - name: Get Project ID
+        id: get-project
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          PROJECT_ID=$(gh api graphql -f query='
+            query($org: String!, $number: Int!) {
+              organization(login: $org) {
+                projectV2(number: $number) {
+                  id
+                }
+              }
+            }' -f org="${{ env.ORG_NAME }}" -F number=${{ env.PROJECT_NUMBER }} --jq '.data.organization.projectV2.id')
+          
+          echo "project_id=$PROJECT_ID" >> $GITHUB_OUTPUT
+
+      - name: Add Issue to Project
+        id: add-to-project
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          ITEM_ID=$(gh api graphql -f query='
+            mutation($project: ID!, $issue: ID!) {
+              addProjectV2ItemById(input: {projectId: $project, contentId: $issue}) {
+                item {
+                  id
+                }
+              }
+            }' -f project="${{ steps.get-project.outputs.project_id }}" \
+               -f issue="${{ github.event.issue.node_id }}" \
+               --jq '.data.addProjectV2ItemById.item.id')
+          
+          echo "item_id=$ITEM_ID" >> $GITHUB_OUTPUT
+
+      - name: Get Project Fields
+        id: get-fields
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          FIELDS=$(gh api graphql -f query='
+            query($org: String!, $number: Int!) {
+              organization(login: $org) {
+                projectV2(number: $number) {
+                  fields(first: 30) {
+                    nodes {
+                      ... on ProjectV2Field {
+                        id
+                        name
+                        dataType
+                      }
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        name
+                        dataType
+                        options {
+                          id
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f org="${{ env.ORG_NAME }}" -F number=${{ env.PROJECT_NUMBER }})
+          
+          # Extract Severity field info
+          SEVERITY_FIELD_ID=$(echo "$FIELDS" | jq -r '.data.organization.projectV2.fields.nodes[] | select(.name == "Severity") | .id')
+          SEVERITY_OPTIONS=$(echo "$FIELDS" | jq -c '.data.organization.projectV2.fields.nodes[] | select(.name == "Severity") | .options')
+          
+          echo "severity_field_id=$SEVERITY_FIELD_ID" >> $GITHUB_OUTPUT
+          echo "severity_options=$SEVERITY_OPTIONS" >> $GITHUB_OUTPUT
+
+      - name: Sync Severity to Project
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          # Parse Severity from issue body
+          # Issue forms format: "### Severity\n\nValue"
+          SEVERITY=$(echo "$ISSUE_BODY" | grep -A2 "### Severity" | tail -1 | xargs)
+          echo "Parsed Severity: $SEVERITY"
+          
+          if [ -n "$SEVERITY" ] && [ "$SEVERITY" != "### Severity" ]; then
+            # Find matching option ID
+            OPTION_ID=$(echo '${{ steps.get-fields.outputs.severity_options }}' | jq -r --arg name "$SEVERITY" '.[] | select(.name == $name) | .id')
+            
+            if [ -n "$OPTION_ID" ] && [ "$OPTION_ID" != "null" ]; then
+              echo "Setting Severity to: $SEVERITY (Option ID: $OPTION_ID)"
+              
+              gh api graphql -f query='
+                mutation($project: ID!, $item: ID!, $field: ID!, $value: String!) {
+                  updateProjectV2ItemFieldValue(
+                    input: {
+                      projectId: $project
+                      itemId: $item
+                      fieldId: $field
+                      value: { singleSelectOptionId: $value }
+                    }
+                  ) {
+                    projectV2Item {
+                      id
+                    }
+                  }
+                }' \
+                -f project="${{ steps.get-project.outputs.project_id }}" \
+                -f item="${{ steps.add-to-project.outputs.item_id }}" \
+                -f field="${{ steps.get-fields.outputs.severity_field_id }}" \
+                -f value="$OPTION_ID"
+              
+              echo "✓ Severity synced successfully"
+            else
+              echo "⚠ Could not find matching Severity option for: $SEVERITY"
+            fi
+          fi
+
+      - name: Assign Dev Owner
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          # Parse Dev Owner from issue body
+          # Format: "### Dev Owner\n\n@username" or "@user1, @user2"
+          DEV_OWNER_LINE=$(echo "$ISSUE_BODY" | grep -A2 "### Dev Owner" | tail -1 | xargs)
+          echo "Parsed Dev Owner line: $DEV_OWNER_LINE"
+          
+          if [ -n "$DEV_OWNER_LINE" ] && [ "$DEV_OWNER_LINE" != "_No response_" ] && [ "$DEV_OWNER_LINE" != "### Dev Owner" ]; then
+            # Extract usernames (remove @ and split by comma/space)
+            USERNAMES=$(echo "$DEV_OWNER_LINE" | grep -oE '@[a-zA-Z0-9_-]+' | sed 's/@//g' | tr '\n' ' ' | xargs)
+            
+            if [ -n "$USERNAMES" ]; then
+              echo "Adding assignees: $USERNAMES"
+              
+              # Use gh issue edit to add assignees
+              for USER in $USERNAMES; do
+                echo "Adding assignee: $USER"
+                gh issue edit ${{ github.event.issue.number }} --add-assignee "$USER" -R ${{ github.repository }} || echo "⚠ Could not assign $USER"
+              done
+              
+              echo "✓ Dev Owner assigned successfully"
+            fi
+          fi
