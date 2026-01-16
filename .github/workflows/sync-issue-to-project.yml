@@ -1,0 +1,223 @@
+name: Sync Issue Fields to Project
+
+on:
+  issues:
+    types: [opened, edited, labeled]
+
+env:
+  PROJECT_NUMBER: 8
+  ORG_NAME: aidd-agex
+
+jobs:
+  sync-to-project:
+    runs-on: ubuntu-latest
+    # Only run for Bug Reports and New Release issues
+    if: contains(github.event.issue.title, '[Bug]') || contains(github.event.issue.title, '[RELEASE]')
+    
+    steps:
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.PROJECT_APP_ID }}
+          private-key: ${{ secrets.PROJECT_APP_PRIVATE_KEY }}
+          owner: ${{ env.ORG_NAME }}
+
+      - name: Get Project ID
+        id: get-project
+        env:
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          PROJECT_ID=$(gh api graphql -f query='
+            query($org: String!, $number: Int!) {
+              organization(login: $org) {
+                projectV2(number: $number) {
+                  id
+                }
+              }
+            }' -f org="${{ env.ORG_NAME }}" -F number=${{ env.PROJECT_NUMBER }} --jq '.data.organization.projectV2.id')
+          
+          echo "project_id=$PROJECT_ID" >> $GITHUB_OUTPUT
+
+      - name: Add Issue to Project
+        id: add-to-project
+        env:
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          ITEM_ID=$(gh api graphql -f query='
+            mutation($project: ID!, $issue: ID!) {
+              addProjectV2ItemById(input: {projectId: $project, contentId: $issue}) {
+                item {
+                  id
+                }
+              }
+            }' -f project="${{ steps.get-project.outputs.project_id }}" \
+               -f issue="${{ github.event.issue.node_id }}" \
+               --jq '.data.addProjectV2ItemById.item.id')
+          
+          echo "item_id=$ITEM_ID" >> $GITHUB_OUTPUT
+
+      - name: Get Project Fields
+        id: get-fields
+        env:
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+        run: |
+          FIELDS=$(gh api graphql -f query='
+            query($org: String!, $number: Int!) {
+              organization(login: $org) {
+                projectV2(number: $number) {
+                  fields(first: 30) {
+                    nodes {
+                      ... on ProjectV2Field {
+                        id
+                        name
+                        dataType
+                      }
+                      ... on ProjectV2SingleSelectField {
+                        id
+                        name
+                        dataType
+                        options {
+                          id
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }' -f org="${{ env.ORG_NAME }}" -F number=${{ env.PROJECT_NUMBER }})
+          
+          # Extract Severity field info
+          SEVERITY_FIELD_ID=$(echo "$FIELDS" | jq -r '.data.organization.projectV2.fields.nodes[] | select(.name == "Severity") | .id')
+          SEVERITY_OPTIONS=$(echo "$FIELDS" | jq -c '.data.organization.projectV2.fields.nodes[] | select(.name == "Severity") | .options')
+          
+          echo "severity_field_id=$SEVERITY_FIELD_ID" >> $GITHUB_OUTPUT
+          echo "severity_options=$SEVERITY_OPTIONS" >> $GITHUB_OUTPUT
+
+      - name: Parse Issue Body and Sync Fields
+        env:
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          # Parse Severity from issue body
+          # Issue forms format: "### Severity\n\nValue"
+          SEVERITY=$(echo "$ISSUE_BODY" | grep -A2 "### Severity" | tail -1 | xargs)
+          echo "Parsed Severity: $SEVERITY"
+          
+          if [ -n "$SEVERITY" ] && [ "$SEVERITY" != "### Severity" ]; then
+            # Find matching option ID
+            OPTION_ID=$(echo '${{ steps.get-fields.outputs.severity_options }}' | jq -r --arg name "$SEVERITY" '.[] | select(.name == $name) | .id')
+            
+            if [ -n "$OPTION_ID" ] && [ "$OPTION_ID" != "null" ]; then
+              echo "Setting Severity to: $SEVERITY (Option ID: $OPTION_ID)"
+              
+              gh api graphql -f query='
+                mutation($project: ID!, $item: ID!, $field: ID!, $value: String!) {
+                  updateProjectV2ItemFieldValue(
+                    input: {
+                      projectId: $project
+                      itemId: $item
+                      fieldId: $field
+                      value: { singleSelectOptionId: $value }
+                    }
+                  ) {
+                    projectV2Item {
+                      id
+                    }
+                  }
+                }' \
+                -f project="${{ steps.get-project.outputs.project_id }}" \
+                -f item="${{ steps.add-to-project.outputs.item_id }}" \
+                -f field="${{ steps.get-fields.outputs.severity_field_id }}" \
+                -f value="$OPTION_ID"
+              
+              echo "✓ Severity synced successfully"
+            else
+              echo "⚠ Could not find matching Severity option for: $SEVERITY"
+            fi
+          fi
+
+      - name: Parse Dev Owner and Assign
+        env:
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          # Parse Dev Owner from issue body
+          # Format: "### Dev Owner\n\n@username" or "@user1, @user2"
+          DEV_OWNER_LINE=$(echo "$ISSUE_BODY" | grep -A2 "### Dev Owner" | tail -1 | xargs)
+          echo "Parsed Dev Owner line: $DEV_OWNER_LINE"
+          
+          if [ -n "$DEV_OWNER_LINE" ] && [ "$DEV_OWNER_LINE" != "_No response_" ] && [ "$DEV_OWNER_LINE" != "### Dev Owner" ]; then
+            # Extract usernames (remove @ and split by comma/space)
+            USERNAMES=$(echo "$DEV_OWNER_LINE" | grep -oE '@[a-zA-Z0-9_-]+' | sed 's/@//g' | tr '\n' ',' | sed 's/,$//')
+            
+            if [ -n "$USERNAMES" ]; then
+              echo "Adding assignees: $USERNAMES"
+              
+              # Convert to JSON array
+              ASSIGNEES_JSON=$(echo "$USERNAMES" | tr ',' '\n' | jq -R . | jq -sc .)
+              
+              gh api \
+                --method POST \
+                -H "Accept: application/vnd.github+json" \
+                "/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/assignees" \
+                -f "assignees=$ASSIGNEES_JSON" || echo "⚠ Could not assign users"
+              
+              echo "✓ Dev Owner assigned successfully"
+            fi
+          fi
+
+      - name: Parse QA Owner and Assign
+        env:
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          # Parse QA Owner from issue body
+          QA_OWNER_LINE=$(echo "$ISSUE_BODY" | grep -A2 "### QA Owner" | tail -1 | xargs)
+          echo "Parsed QA Owner line: $QA_OWNER_LINE"
+          
+          if [ -n "$QA_OWNER_LINE" ] && [ "$QA_OWNER_LINE" != "_No response_" ] && [ "$QA_OWNER_LINE" != "### QA Owner" ]; then
+            USERNAMES=$(echo "$QA_OWNER_LINE" | grep -oE '@[a-zA-Z0-9_-]+' | sed 's/@//g' | tr '\n' ',' | sed 's/,$//')
+            
+            if [ -n "$USERNAMES" ]; then
+              echo "Adding QA assignees: $USERNAMES"
+              
+              ASSIGNEES_JSON=$(echo "$USERNAMES" | tr ',' '\n' | jq -R . | jq -sc .)
+              
+              gh api \
+                --method POST \
+                -H "Accept: application/vnd.github+json" \
+                "/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/assignees" \
+                -f "assignees=$ASSIGNEES_JSON" || echo "⚠ Could not assign QA users"
+              
+              echo "✓ QA Owner assigned successfully"
+            fi
+          fi
+
+      - name: Parse Product Owner and Assign
+        env:
+          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          # Parse Product Owner from issue body
+          PO_LINE=$(echo "$ISSUE_BODY" | grep -A2 "### Product Owner" | tail -1 | xargs)
+          echo "Parsed Product Owner line: $PO_LINE"
+          
+          if [ -n "$PO_LINE" ] && [ "$PO_LINE" != "_No response_" ] && [ "$PO_LINE" != "### Product Owner" ]; then
+            USERNAMES=$(echo "$PO_LINE" | grep -oE '@[a-zA-Z0-9_-]+' | sed 's/@//g' | tr '\n' ',' | sed 's/,$//')
+            
+            if [ -n "$USERNAMES" ]; then
+              echo "Adding PO assignees: $USERNAMES"
+              
+              ASSIGNEES_JSON=$(echo "$USERNAMES" | tr ',' '\n' | jq -R . | jq -sc .)
+              
+              gh api \
+                --method POST \
+                -H "Accept: application/vnd.github+json" \
+                "/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/assignees" \
+                -f "assignees=$ASSIGNEES_JSON" || echo "⚠ Could not assign PO users"
+              
+              echo "✓ Product Owner assigned successfully"
+            fi
+          fi
