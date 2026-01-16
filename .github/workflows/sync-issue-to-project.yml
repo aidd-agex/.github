@@ -2,7 +2,7 @@ name: Sync Issue Fields to Project
 
 on:
   issues:
-    types: [opened, edited, labeled]
+    types: [opened, edited]
 
 env:
   PROJECT_NUMBER: 8
@@ -15,18 +15,10 @@ jobs:
     if: contains(github.event.issue.title, '[Bug]') || contains(github.event.issue.title, '[RELEASE]')
     
     steps:
-      - name: Generate token
-        id: generate_token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ vars.PROJECT_APP_ID }}
-          private-key: ${{ secrets.PROJECT_APP_PRIVATE_KEY }}
-          owner: ${{ env.ORG_NAME }}
-
       - name: Get Project ID
         id: get-project
         env:
-          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           PROJECT_ID=$(gh api graphql -f query='
             query($org: String!, $number: Int!) {
@@ -42,7 +34,7 @@ jobs:
       - name: Add Issue to Project
         id: add-to-project
         env:
-          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           ITEM_ID=$(gh api graphql -f query='
             mutation($project: ID!, $issue: ID!) {
@@ -60,7 +52,7 @@ jobs:
       - name: Get Project Fields
         id: get-fields
         env:
-          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           FIELDS=$(gh api graphql -f query='
             query($org: String!, $number: Int!) {
@@ -95,9 +87,9 @@ jobs:
           echo "severity_field_id=$SEVERITY_FIELD_ID" >> $GITHUB_OUTPUT
           echo "severity_options=$SEVERITY_OPTIONS" >> $GITHUB_OUTPUT
 
-      - name: Parse Issue Body and Sync Fields
+      - name: Sync Severity to Project
         env:
-          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
           # Parse Severity from issue body
@@ -138,9 +130,9 @@ jobs:
             fi
           fi
 
-      - name: Parse Dev Owner and Assign
+      - name: Assign Dev Owner
         env:
-          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
           # Parse Dev Owner from issue body
@@ -150,74 +142,17 @@ jobs:
           
           if [ -n "$DEV_OWNER_LINE" ] && [ "$DEV_OWNER_LINE" != "_No response_" ] && [ "$DEV_OWNER_LINE" != "### Dev Owner" ]; then
             # Extract usernames (remove @ and split by comma/space)
-            USERNAMES=$(echo "$DEV_OWNER_LINE" | grep -oE '@[a-zA-Z0-9_-]+' | sed 's/@//g' | tr '\n' ',' | sed 's/,$//')
+            USERNAMES=$(echo "$DEV_OWNER_LINE" | grep -oE '@[a-zA-Z0-9_-]+' | sed 's/@//g' | tr '\n' ' ' | xargs)
             
             if [ -n "$USERNAMES" ]; then
               echo "Adding assignees: $USERNAMES"
               
-              # Convert to JSON array
-              ASSIGNEES_JSON=$(echo "$USERNAMES" | tr ',' '\n' | jq -R . | jq -sc .)
-              
-              gh api \
-                --method POST \
-                -H "Accept: application/vnd.github+json" \
-                "/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/assignees" \
-                -f "assignees=$ASSIGNEES_JSON" || echo "⚠ Could not assign users"
+              # Use gh issue edit to add assignees
+              for USER in $USERNAMES; do
+                echo "Adding assignee: $USER"
+                gh issue edit ${{ github.event.issue.number }} --add-assignee "$USER" -R ${{ github.repository }} || echo "⚠ Could not assign $USER"
+              done
               
               echo "✓ Dev Owner assigned successfully"
-            fi
-          fi
-
-      - name: Parse QA Owner and Assign
-        env:
-          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
-          ISSUE_BODY: ${{ github.event.issue.body }}
-        run: |
-          # Parse QA Owner from issue body
-          QA_OWNER_LINE=$(echo "$ISSUE_BODY" | grep -A2 "### QA Owner" | tail -1 | xargs)
-          echo "Parsed QA Owner line: $QA_OWNER_LINE"
-          
-          if [ -n "$QA_OWNER_LINE" ] && [ "$QA_OWNER_LINE" != "_No response_" ] && [ "$QA_OWNER_LINE" != "### QA Owner" ]; then
-            USERNAMES=$(echo "$QA_OWNER_LINE" | grep -oE '@[a-zA-Z0-9_-]+' | sed 's/@//g' | tr '\n' ',' | sed 's/,$//')
-            
-            if [ -n "$USERNAMES" ]; then
-              echo "Adding QA assignees: $USERNAMES"
-              
-              ASSIGNEES_JSON=$(echo "$USERNAMES" | tr ',' '\n' | jq -R . | jq -sc .)
-              
-              gh api \
-                --method POST \
-                -H "Accept: application/vnd.github+json" \
-                "/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/assignees" \
-                -f "assignees=$ASSIGNEES_JSON" || echo "⚠ Could not assign QA users"
-              
-              echo "✓ QA Owner assigned successfully"
-            fi
-          fi
-
-      - name: Parse Product Owner and Assign
-        env:
-          GH_TOKEN: ${{ steps.generate_token.outputs.token }}
-          ISSUE_BODY: ${{ github.event.issue.body }}
-        run: |
-          # Parse Product Owner from issue body
-          PO_LINE=$(echo "$ISSUE_BODY" | grep -A2 "### Product Owner" | tail -1 | xargs)
-          echo "Parsed Product Owner line: $PO_LINE"
-          
-          if [ -n "$PO_LINE" ] && [ "$PO_LINE" != "_No response_" ] && [ "$PO_LINE" != "### Product Owner" ]; then
-            USERNAMES=$(echo "$PO_LINE" | grep -oE '@[a-zA-Z0-9_-]+' | sed 's/@//g' | tr '\n' ',' | sed 's/,$//')
-            
-            if [ -n "$USERNAMES" ]; then
-              echo "Adding PO assignees: $USERNAMES"
-              
-              ASSIGNEES_JSON=$(echo "$USERNAMES" | tr ',' '\n' | jq -R . | jq -sc .)
-              
-              gh api \
-                --method POST \
-                -H "Accept: application/vnd.github+json" \
-                "/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/assignees" \
-                -f "assignees=$ASSIGNEES_JSON" || echo "⚠ Could not assign PO users"
-              
-              echo "✓ Product Owner assigned successfully"
             fi
           fi
