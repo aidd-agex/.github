@@ -1,7 +1,7 @@
 name: Hotfix Release
 description: Create a hotfix release (manual commits to stg-YYYYMMDD, no merge from develop)
 title: "[HOTFIX] stg-YYYYMMDD"
-labels: ["staging", "release:hotfix"]
+labels: ["staging", "release", "hotfix"]
 body:
   - type: markdown
     attributes:
