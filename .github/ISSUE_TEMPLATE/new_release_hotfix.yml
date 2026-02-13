@@ -1,0 +1,60 @@
+name: Hotfix Release
+description: Create a hotfix release (manual commits to stg-YYYYMMDD, no merge from develop)
+title: "[HOTFIX] stg-YYYYMMDD"
+labels: ["staging", "release:hotfix"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Hotfix Release
+        Use this when you need to release **only specific fix commit(s)** to an existing `stg-YYYYMMDD` branch, **without** merging the full `develop` branch.
+        
+        **Instructions:**
+        1. Update the title to match the target release date: `[HOTFIX] stg-YYYYMMDD`
+        2. Ensure branch `stg-YYYYMMDD` exists (create from `stg` if this is the first hotfix for that date)
+        3. **Manually** merge or cherry-pick only the hotfix commit(s) into `stg-YYYYMMDD` and push
+        4. This template adds label **release:hotfix** to trigger the hotfix workflow (no merge from develop)
+        5. The workflow will:
+           - Sync with branch `stg-YYYYMMDD`
+           - Create/update PR to `stg`
+           - Generate release notes from commits on the branch
+           - Same GitOps and release publish flow as regular release
+      
+  - type: textarea
+    id: hotfix_commits
+    attributes:
+      label: "## Hotfix commit(s) / PR(s) (Optional)"
+      description: |
+        Release notes are auto-generated from commits on stg-YYYYMMDD (same as regular release).
+        Use this field only for audit/reference, or when commit messages don't contain PR numbers.
+      placeholder: |
+        e.g. PR #1234, commit abc1234 (optional)
+    validations:
+      required: false
+      
+  - type: textarea
+    id: notes
+    attributes:
+      label: "## Additional Notes (Optional)"
+      description: |
+        Reason for hotfix, impact, or manual notes.
+      placeholder: |
+        e.g. Production bugfix for XYZ; bypasses regular release cycle.
+    validations:
+      required: false
+      
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-hotfix Checklist
+      options:
+        - label: Branch stg-YYYYMMDD exists (or I will create it from stg)
+          required: true
+        - label: Hotfix commit(s) are merged/cherry-picked into stg-YYYYMMDD and pushed
+          required: true
+        - label: All the dependencies of the hotfix are already changed (e.g. Nacos, Database, etc.)
+          required: true
+        - label: All tests pass (for the hotfix changes)
+          required: true
+        - label: release:hotfix is added by this template and will trigger the workflow
+          required: true
