@@ -35,6 +35,26 @@ body:
     validations:
       required: false
       
+  - type: dropdown
+    id: nacos-change-only-services
+    attributes:
+      label: Nacos Change Only Services
+      description: |
+        Select services that need nacos config updated in PROD **without** changing their code version.
+        These services will have their nacos sync job re-run, and `nacosJobName` in their prod values.yaml will be updated.
+      multiple: true
+      options:
+        - ninja-agent-store-service
+        - ninja-api-service
+        - ninja-audio-service
+        - ninja-file-service
+        - ninja-gateway
+        - ninja-notification-service
+        - ninja-schedule-service
+        - ninja-user-service
+    validations:
+      required: false
+
   - type: checkboxes
     id: checklist
     attributes:
