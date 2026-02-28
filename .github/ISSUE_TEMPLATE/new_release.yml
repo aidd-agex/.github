@@ -19,22 +19,7 @@ body:
            - Detect all included PRs automatically
            - Generate release notes with PR details and authors
            - Create PR to merge back to `stg`
-      
-  - type: textarea
-    id: notes
-    attributes:
-      label: "## Additional Notes (Optional)"
-      description: |
-        Optional manual notes for reference. 
-        Note: Release notes will be auto-generated from PR history by the workflow.
-        This field is for additional context, breaking changes, or manual reminders.
-      placeholder: |
-        Optional: Any additional context, breaking changes, or important notes...
-        
-        The workflow will automatically generate release notes from merged PRs.
-    validations:
-      required: false
-      
+
   - type: dropdown
     id: nacos-change-only-services
     attributes:
@@ -55,6 +40,21 @@ body:
     validations:
       required: false
 
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes (Optional)
+      description: |
+        Optional manual notes for reference. 
+        Note: Release notes will be auto-generated from PR history by the workflow.
+        This field is for additional context, breaking changes, or manual reminders.
+      placeholder: |
+        Optional: Any additional context, breaking changes, or important notes...
+        
+        The workflow will automatically generate release notes from merged PRs.
+    validations:
+      required: false
+      
   - type: checkboxes
     id: checklist
     attributes:
