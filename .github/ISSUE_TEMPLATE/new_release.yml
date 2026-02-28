@@ -12,8 +12,9 @@ body:
         **Instructions:**
         1. Update the title to match the release date: `[RELEASE] stg-YYYYMMDD`
         2. PRs must already be merged to `develop` branch
-        3. Add label `release:plan` to trigger the automation
-        4. The workflow will automatically:
+        3. If any services need only Nacos config updated in PROD (without code change), select them from the **Nacos Change Only Services** dropdown below, then manually trigger [Ninja Service Release](https://github.com/aidd-agex/gitops/actions/workflows/ninja-service-release.yml) with the same services in the `nacos-change-only-services` input
+        4. Add label `release:plan` to trigger the automation
+        5. The workflow will automatically:
            - Create branch `stg-YYYYMMDD` from `stg`
            - Merge `develop` branch into it
            - Detect all included PRs automatically
