@@ -54,12 +54,20 @@ body:
     validations:
       required: false
       
-  - type: input
+  - type: dropdown
     id: component
     attributes:
       label: Component(s)
-      description: "Enter relevant component(s) separated by commas"
-      placeholder: "Web, Backend"
+      description: "Select all relevant component(s)"
+      multiple: true
+      options:
+        - Web
+        - Backend
+        - iOS App
+        - Android App
+        - Desktop
+        - Infrastructure/CI
+        - Other
     validations:
       required: true
 
