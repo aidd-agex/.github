@@ -1,6 +1,7 @@
 name: Bug Report
 description: Report a bug in the project
 title: "[Bug]: "
+labels: ["bug"]
 assignees: []
 
 body:    
@@ -14,6 +15,7 @@ body:
         - Major
         - Minor
         - Trivial
+      default: 2
     validations:
       required: true
       
@@ -62,7 +64,7 @@ body:
       description: "Enter device type(s) separated by commas"
       placeholder: "Mac, iPhone, Android Phone"
     validations:
-      required: true
+      required: false
       
   - type: input
     id: browser_app
