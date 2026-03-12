@@ -44,6 +44,7 @@ body:
       options:
         - "Firestore: ai-service-prod"
         - "Firestore: memory-service-prod"
+        - "Firestore: growthbook-prod"
         - "Redis: prod instance"
         - "Other (specify in Reason / Background)"
     validations:
