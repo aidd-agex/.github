@@ -1,5 +1,5 @@
 name: Prod DB Access Request
-description: Request read or write access to production Firestore database
+description: Request read or write access to production databases (Firestore / Redis)
 title: "[Prod DB]: "
 labels: [prod-db-request]
 assignees: []
@@ -10,7 +10,7 @@ body:
     attributes:
       value: |
         ## 🔒 Production Database Access Request
-        Production databases are restricted to the Platform team. Use this form to request data access for debugging, investigation, or data fixes.
+        Production databases (Firestore & Redis) are restricted to the Platform team. Use this form to request data access for debugging, investigation, or data fixes.
         
         **⚠️ Before submitting:** Confirm that this cannot be resolved using dev/stg environments.
 
@@ -26,14 +26,26 @@ body:
       required: true
 
   - type: dropdown
+    id: datastore_type
+    attributes:
+      label: Data Store Type
+      description: "Which type of production data store?"
+      options:
+        - Firestore
+        - Redis (Memorystore)
+    validations:
+      required: true
+
+  - type: dropdown
     id: database
     attributes:
-      label: Target Database
-      description: "Which production database do you need to access?"
+      label: Target Database / Instance
+      description: "Which production database or Redis instance? Select 'Other' if not listed."
       options:
-        - ai-service-prod
-        - memory-service-prod
-        - Other (specify in description)
+        - "Firestore: ai-service-prod"
+        - "Firestore: memory-service-prod"
+        - "Redis: prod instance"
+        - "Other (specify in Reason / Background)"
     validations:
       required: true
 
@@ -114,14 +126,17 @@ body:
   - type: textarea
     id: query
     attributes:
-      label: "Query / Collection Path"
-      description: "Simple queries can be pasted here. For complex scripts, write 'See attachment' and attach the file to this issue or send via email."
+      label: "Query / Command"
+      description: "Firestore: collection path or query. Redis: key pattern or command (GET, HGETALL, KEYS, etc.). For complex scripts, write 'See attachment' and attach the file or send via email."
       placeholder: |
-        Simple query:
+        Firestore example:
         db.collection('users').doc('abc123').collection('conversations').get()
         
-        Or for complex scripts:
-        See attachment: query.js (also sent via email)
+        Redis example:
+        GET user:abc123:profile
+        HGETALL session:abc123
+        
+        Complex: See attachment query.js (also sent via email)
       render: shell
     validations:
       required: true
@@ -159,11 +174,16 @@ body:
   - type: textarea
     id: pre_execution_query
     attributes:
-      label: "Pre-execution GET Query & Expected Result"
-      description: "Query to verify current state BEFORE modification, and what you expect it to return. Can paste here or write 'See attachment'."
+      label: "Pre-execution Verification & Expected Result"
+      description: "Query/command to verify current state BEFORE modification. Can paste here or write 'See attachment'."
       placeholder: |
+        Firestore:
         Query: db.collection('users').where('status', '==', 'INVALID').get()
         Expected: 15 documents with status=INVALID
+        
+        Redis:
+        Command: GET user:abc123:profile
+        Expected: {"name":"old_name","status":"active"}
         
         Or: See attachment pre-check.js (also sent via email)
       render: shell
@@ -171,11 +191,15 @@ body:
   - type: textarea
     id: modification_script
     attributes:
-      label: "Modification Script"
-      description: "Exact script to execute. For complex scripts, attach the file (.js/.sh) to this issue or send via email — we will execute the file directly."
+      label: "Modification Script / Command"
+      description: "Exact script or Redis command to execute. For complex scripts, attach the file (.js/.sh) to this issue or send via email — we will execute the file directly."
       placeholder: |
-        Simple:
+        Firestore:
         db.collection('users').where('status', '==', 'INVALID').update({status: 'ACTIVE'})
+        
+        Redis:
+        DEL user:abc123:stale_cache
+        SET user:abc123:profile '{"name":"new_name"}' EX 3600
         
         Complex: See attachment fix-status.js (also sent via email)
       render: shell
@@ -183,11 +207,16 @@ body:
   - type: textarea
     id: post_execution_query
     attributes:
-      label: "Post-execution GET Query & Expected Result"
-      description: "Query to verify state AFTER modification, and what you expect. Can paste here or write 'See attachment'."
+      label: "Post-execution Verification & Expected Result"
+      description: "Query/command to verify state AFTER modification. Can paste here or write 'See attachment'."
       placeholder: |
+        Firestore:
         Query: db.collection('users').where('status', '==', 'INVALID').get()
         Expected: 0 documents
+        
+        Redis:
+        Command: GET user:abc123:stale_cache
+        Expected: (nil)
         
         Or: See attachment post-check.js (also sent via email)
       render: shell
@@ -219,19 +248,21 @@ body:
       label: "Rollback Plan"
       description: "How to revert if something goes wrong. For rollback scripts, attach the file or send via email."
       placeholder: |
+        Firestore:
         1. Affected document IDs: see attachment affected-ids.txt
         2. Rollback script: see attachment rollback.js (also sent via email)
         
-        Or simple rollback:
-        db.collection('users').doc('xxx').update({status: 'INVALID'})
+        Redis:
+        1. Cache will auto-rebuild on next access; no data loss
+        2. Or: SET user:abc123:profile '<original_value>' EX 3600
       render: shell
 
   - type: input
     id: affected_scope
     attributes:
       label: "Affected Scope"
-      description: "For write requests: how many documents/records will be affected?"
-      placeholder: "e.g., 15 documents, 1 user record"
+      description: "For write requests: how many documents/keys/records will be affected?"
+      placeholder: "e.g., 15 Firestore documents, 50 Redis keys, 1 user record"
 
   - type: markdown
     attributes:
