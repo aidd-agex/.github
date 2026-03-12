@@ -1,0 +1,253 @@
+name: Prod DB Access Request
+description: Request read or write access to production Firestore database
+title: "[Prod DB]: "
+labels: [prod-db-request]
+assignees: []
+
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        ## 🔒 Production Database Access Request
+        Production databases are restricted to the Platform team. Use this form to request data access for debugging, investigation, or data fixes.
+        
+        **⚠️ Before submitting:** Confirm that this cannot be resolved using dev/stg environments.
+
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Request Type
+      description: "Read = query only; Write = create/update/delete data"
+      options:
+        - Read
+        - Write
+    validations:
+      required: true
+
+  - type: dropdown
+    id: database
+    attributes:
+      label: Target Database
+      description: "Which production database do you need to access?"
+      options:
+        - ai-service-prod
+        - memory-service-prod
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      description: "Critical = blocking production incident; High = same-day needed; Normal = can wait"
+      options:
+        - Normal
+        - High
+        - Critical (production incident)
+    validations:
+      required: true
+
+  - type: input
+    id: senior_approval
+    attributes:
+      label: "Team Senior Approval"
+      description: "@mention your team senior who approved this request"
+      placeholder: "@senior-username"
+    validations:
+      required: true
+
+  - type: input
+    id: related_issue
+    attributes:
+      label: "Related Issue / Incident"
+      description: "Link to the bug, incident, or ticket that triggered this request"
+      placeholder: "e.g., ninja#1234 or incident URL"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: release_related
+    attributes:
+      label: "Release Related?"
+      description: "Is this request related to a release?"
+      options:
+        - "No"
+        - "Yes - before release"
+        - "Yes - after release"
+    validations:
+      required: true
+
+  - type: input
+    id: execution_time
+    attributes:
+      label: "Expected Execution Time"
+      description: "When should this be executed?"
+      placeholder: "e.g., ASAP, 2026-03-13 10:00 JST, next maintenance window"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: "Reason / Background"
+      description: "Why do you need production data access? What are you investigating?"
+      placeholder: |
+        Describe the issue you're investigating and why prod access is needed.
+        Include any relevant context (error logs, user reports, etc.)
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: "---"
+
+  - type: markdown
+    attributes:
+      value: "### 📖 Query Details"
+
+  - type: textarea
+    id: query
+    attributes:
+      label: "Query / Collection Path"
+      description: "Exact Firestore query or collection/document path to read"
+      placeholder: |
+        e.g.,
+        db.collection('users').doc('abc123').collection('conversations').get()
+        
+        or collection path:
+        users/{userId}/conversations
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_results
+    attributes:
+      label: "Expected Results"
+      description: "What data do you expect to see? This helps us verify correctness."
+      placeholder: "e.g., Should return 1 document with fields: name, email, status"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: pii
+    attributes:
+      label: "Contains PII?"
+      description: "Will the query results contain personally identifiable information?"
+      options:
+        - "No"
+        - "Yes"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: "---"
+
+  - type: markdown
+    attributes:
+      value: |
+        ### ✏️ Write Request Details
+        **Fill this section only if Request Type = Write.** Leave blank for read-only requests.
+
+  - type: textarea
+    id: pre_execution_query
+    attributes:
+      label: "Pre-execution GET Query"
+      description: "Query to verify the current state BEFORE modification"
+      placeholder: |
+        db.collection('users').where('status', '==', 'INVALID').get()
+      render: shell
+
+  - type: textarea
+    id: pre_execution_expected
+    attributes:
+      label: "Expected Pre-execution Result"
+      description: "What you expect the pre-execution GET query to return"
+      placeholder: "e.g., 15 documents with status=INVALID"
+
+  - type: textarea
+    id: modification_script
+    attributes:
+      label: "Modification Script"
+      description: "Exact script or query to execute for the data modification"
+      placeholder: |
+        // Example:
+        const snapshot = await db.collection('users').where('status', '==', 'INVALID').get();
+        const batch = db.batch();
+        snapshot.forEach(doc => batch.update(doc.ref, { status: 'ACTIVE' }));
+        await batch.commit();
+      render: shell
+
+  - type: textarea
+    id: post_execution_query
+    attributes:
+      label: "Post-execution GET Query"
+      description: "Query to verify the state AFTER modification"
+      placeholder: |
+        db.collection('users').where('status', '==', 'INVALID').get()
+      render: shell
+
+  - type: textarea
+    id: post_execution_expected
+    attributes:
+      label: "Expected Post-execution Result"
+      description: "What you expect after the modification is complete"
+      placeholder: "e.g., 0 documents with status=INVALID"
+
+  - type: dropdown
+    id: tested_lower_env
+    attributes:
+      label: "Tested in Lower Environment?"
+      description: "Has this script been tested in dev or stg?"
+      options:
+        - "N/A (read-only request)"
+        - "Yes - tested in dev"
+        - "Yes - tested in stg"
+        - "Yes - tested in both dev and stg"
+        - "No (please explain why)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: test_evidence
+    attributes:
+      label: "Test Evidence"
+      description: "For write requests: attach screenshots or logs from lower environment testing"
+      placeholder: "Paste screenshots or test output here"
+
+  - type: textarea
+    id: rollback_plan
+    attributes:
+      label: "Rollback Plan"
+      description: "For write requests: how to revert if something goes wrong"
+      placeholder: |
+        e.g.,
+        1. Restore from the document IDs list (attached)
+        2. Run reverse script: db.collection('users').doc('xxx').update({status: 'INVALID'})
+      render: shell
+
+  - type: input
+    id: affected_scope
+    attributes:
+      label: "Affected Scope"
+      description: "For write requests: how many documents/records will be affected?"
+      placeholder: "e.g., 15 documents, 1 user record"
+
+  - type: markdown
+    attributes:
+      value: "---"
+
+  - type: markdown
+    attributes:
+      value: |
+        ### ℹ️ Review Checklist (for Platform team)
+        - [ ] Request is necessary (cannot be resolved in dev/stg)
+        - [ ] Query scope is appropriate (not overly broad)
+        - [ ] Team senior has approved
+        - [ ] (Write) Script tested in lower environment
+        - [ ] (Write) Rollback plan is viable
+        - [ ] (Write) Pre/post verification queries provided
+        - [ ] Executed and results posted
