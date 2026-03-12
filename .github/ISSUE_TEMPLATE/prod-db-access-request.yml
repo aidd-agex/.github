@@ -105,19 +105,23 @@ body:
 
   - type: markdown
     attributes:
-      value: "### 📖 Query Details"
+      value: |
+        ### 📖 Query Details
+        
+        **📎 Scripts & Queries can be provided as attachments.**
+        For complex or multi-line scripts, attach the script file (.js / .sh / .txt) to this issue or send via email to the Platform team (peilin.zhai@rakuten.com, yuanhao.wu@rakuten.com, yang.f.yang@rakuten.com). This avoids formatting/copy-paste issues and allows direct execution.
 
   - type: textarea
     id: query
     attributes:
       label: "Query / Collection Path"
-      description: "Exact Firestore query or collection/document path to read"
+      description: "Simple queries can be pasted here. For complex scripts, write 'See attachment' and attach the file to this issue or send via email."
       placeholder: |
-        e.g.,
+        Simple query:
         db.collection('users').doc('abc123').collection('conversations').get()
         
-        or collection path:
-        users/{userId}/conversations
+        Or for complex scripts:
+        See attachment: query.js (also sent via email)
       render: shell
     validations:
       required: true
@@ -155,47 +159,38 @@ body:
   - type: textarea
     id: pre_execution_query
     attributes:
-      label: "Pre-execution GET Query"
-      description: "Query to verify the current state BEFORE modification"
+      label: "Pre-execution GET Query & Expected Result"
+      description: "Query to verify current state BEFORE modification, and what you expect it to return. Can paste here or write 'See attachment'."
       placeholder: |
-        db.collection('users').where('status', '==', 'INVALID').get()
+        Query: db.collection('users').where('status', '==', 'INVALID').get()
+        Expected: 15 documents with status=INVALID
+        
+        Or: See attachment pre-check.js (also sent via email)
       render: shell
-
-  - type: textarea
-    id: pre_execution_expected
-    attributes:
-      label: "Expected Pre-execution Result"
-      description: "What you expect the pre-execution GET query to return"
-      placeholder: "e.g., 15 documents with status=INVALID"
 
   - type: textarea
     id: modification_script
     attributes:
       label: "Modification Script"
-      description: "Exact script or query to execute for the data modification"
+      description: "Exact script to execute. For complex scripts, attach the file (.js/.sh) to this issue or send via email — we will execute the file directly."
       placeholder: |
-        // Example:
-        const snapshot = await db.collection('users').where('status', '==', 'INVALID').get();
-        const batch = db.batch();
-        snapshot.forEach(doc => batch.update(doc.ref, { status: 'ACTIVE' }));
-        await batch.commit();
+        Simple:
+        db.collection('users').where('status', '==', 'INVALID').update({status: 'ACTIVE'})
+        
+        Complex: See attachment fix-status.js (also sent via email)
       render: shell
 
   - type: textarea
     id: post_execution_query
     attributes:
-      label: "Post-execution GET Query"
-      description: "Query to verify the state AFTER modification"
+      label: "Post-execution GET Query & Expected Result"
+      description: "Query to verify state AFTER modification, and what you expect. Can paste here or write 'See attachment'."
       placeholder: |
-        db.collection('users').where('status', '==', 'INVALID').get()
+        Query: db.collection('users').where('status', '==', 'INVALID').get()
+        Expected: 0 documents
+        
+        Or: See attachment post-check.js (also sent via email)
       render: shell
-
-  - type: textarea
-    id: post_execution_expected
-    attributes:
-      label: "Expected Post-execution Result"
-      description: "What you expect after the modification is complete"
-      placeholder: "e.g., 0 documents with status=INVALID"
 
   - type: dropdown
     id: tested_lower_env
@@ -222,11 +217,13 @@ body:
     id: rollback_plan
     attributes:
       label: "Rollback Plan"
-      description: "For write requests: how to revert if something goes wrong"
+      description: "How to revert if something goes wrong. For rollback scripts, attach the file or send via email."
       placeholder: |
-        e.g.,
-        1. Restore from the document IDs list (attached)
-        2. Run reverse script: db.collection('users').doc('xxx').update({status: 'INVALID'})
+        1. Affected document IDs: see attachment affected-ids.txt
+        2. Rollback script: see attachment rollback.js (also sent via email)
+        
+        Or simple rollback:
+        db.collection('users').doc('xxx').update({status: 'INVALID'})
       render: shell
 
   - type: input
