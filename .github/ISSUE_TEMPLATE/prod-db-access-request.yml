@@ -13,6 +13,8 @@ body:
         Production databases (Firestore & Redis) are restricted to the Platform team. Use this form to request data access for debugging, investigation, or data fixes.
         
         **⚠️ Before submitting:** Confirm that this cannot be resolved using dev/stg environments.
+        
+        **🔄 Auto-revocation:** All non-platform prod DB access is automatically revoked every day at 19:00 JST. If you need access beyond that, select the appropriate duration below.
 
   - type: dropdown
     id: request_type
@@ -61,6 +63,25 @@ body:
         - Critical (production incident)
     validations:
       required: true
+
+  - type: dropdown
+    id: access_duration
+    attributes:
+      label: "Access Duration"
+      description: "How long do you need direct prod DB access? 'Platform execution only' means you do NOT need personal access — Platform team runs the query and posts results. All access is auto-revoked daily at 19:00 JST."
+      options:
+        - "Platform execution only (no personal access needed)"
+        - "Same day (revoked at tonight's 19:00 JST cleanup)"
+        - "Multiple days (specify end date in field below)"
+    validations:
+      required: true
+
+  - type: input
+    id: access_expiry
+    attributes:
+      label: "Access Expiry Date (if multiple days)"
+      description: "Only fill this if you selected 'Multiple days' above. Access will be revoked on this date at 19:00 JST."
+      placeholder: "e.g., 2026-03-21"
 
   - type: input
     id: senior_approval
@@ -280,3 +301,5 @@ body:
         - [ ] (Write) Rollback plan is viable
         - [ ] (Write) Pre/post verification queries provided
         - [ ] Executed and results posted
+        - [ ] Access granted (if personal access requested)
+        - [ ] Access revoked / confirmed auto-revoked
