@@ -94,12 +94,15 @@ body:
     validations:
       required: true
 
-  - type: input
+  - type: dropdown
     id: tl_approval
     attributes:
       label: "Team Lead Approval"
-      description: "@mention your Team Lead who approved this request"
-      placeholder: "@team-lead-username"
+      description: "Select the Team Lead who approved this request"
+      options:
+        - mengjie01-rakuten
+        - liuhanlin01-rakuten
+        - wangdonghui01-rakuten
     validations:
       required: true
 
