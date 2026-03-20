@@ -14,6 +14,8 @@ body:
         
         **⚠️ Before submitting:** Confirm that this cannot be resolved using dev/stg environments.
         
+        **👥 Approval flow:** Peer review (team member) → Team Lead approval → Platform team execution.
+        
         **🔄 Auto-revocation:** All non-platform prod DB access is automatically revoked every day at 19:00 JST. If you need access beyond that, select the appropriate duration below.
 
   - type: dropdown
@@ -84,11 +86,20 @@ body:
       placeholder: "e.g., 2026-03-21"
 
   - type: input
-    id: senior_approval
+    id: peer_reviewer
     attributes:
-      label: "Team Senior Approval"
-      description: "@mention your team senior who approved this request"
-      placeholder: "@senior-username"
+      label: "Peer Reviewer"
+      description: "@mention a team member who has reviewed your query/script and confirmed it is correct and safe"
+      placeholder: "@peer-username"
+    validations:
+      required: true
+
+  - type: input
+    id: tl_approval
+    attributes:
+      label: "Team Lead Approval"
+      description: "@mention your Team Lead who approved this request"
+      placeholder: "@team-lead-username"
     validations:
       required: true
 
@@ -296,7 +307,8 @@ body:
         ### ℹ️ Review Checklist (for Platform team)
         - [ ] Request is necessary (cannot be resolved in dev/stg)
         - [ ] Query scope is appropriate (not overly broad)
-        - [ ] Team senior has approved
+        - [ ] Peer reviewed by team member
+        - [ ] Team Lead has approved
         - [ ] (Write) Script tested in lower environment
         - [ ] (Write) Rollback plan is viable
         - [ ] (Write) Pre/post verification queries provided
