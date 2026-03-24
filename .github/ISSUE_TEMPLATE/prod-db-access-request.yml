@@ -1,5 +1,5 @@
 name: Prod DB Access Request
-description: Request read or write access to production databases (Firestore / Redis)
+description: Request read or write access to production databases (Firestore / Redis / Cloud SQL)
 title: "[Prod DB]: "
 labels: [prod-db-request]
 assignees: []
@@ -10,7 +10,7 @@ body:
     attributes:
       value: |
         ## 🔒 Production Database Access Request
-        Production databases (Firestore & Redis) are restricted to the Platform team. Use this form to request data access for debugging, investigation, or data fixes.
+        Production databases (Firestore, Redis & Cloud SQL) are restricted to the Platform team. Use this form to request data access for debugging, investigation, or data fixes.
         
         **⚠️ Before submitting:** Confirm that this cannot be resolved using dev/stg environments.
         
@@ -37,6 +37,7 @@ body:
       options:
         - Firestore
         - Redis (Memorystore)
+        - Cloud SQL (PostgreSQL)
     validations:
       required: true
 
@@ -50,6 +51,8 @@ body:
         - "Firestore: memory-service-prod"
         - "Firestore: growthbook-prod"
         - "Redis: prod instance"
+        - "Cloud SQL: prod-psql / litellm"
+        - "Cloud SQL: prod-psql / avatar"
         - "Other (specify in Reason / Background)"
     validations:
       required: true
@@ -163,7 +166,7 @@ body:
     id: query
     attributes:
       label: "Query / Command"
-      description: "Firestore: collection path or query. Redis: key pattern or command (GET, HGETALL, KEYS, etc.). For complex scripts, write 'See attachment' and attach the file or send via email."
+      description: "Firestore: collection path or query. Redis: key pattern or command. Cloud SQL: SQL query. For complex scripts, write 'See attachment' and attach the file or send via email."
       placeholder: |
         Firestore example:
         db.collection('users').doc('abc123').collection('conversations').get()
@@ -172,7 +175,10 @@ body:
         GET user:abc123:profile
         HGETALL session:abc123
         
-        Complex: See attachment query.js (also sent via email)
+        Cloud SQL example:
+        SELECT id, status FROM users WHERE created_at > '2026-01-01' LIMIT 100;
+        
+        Complex: See attachment query.js / query.sql (also sent via email)
       render: shell
     validations:
       required: true
@@ -221,14 +227,18 @@ body:
         Command: GET user:abc123:profile
         Expected: {"name":"old_name","status":"active"}
         
-        Or: See attachment pre-check.js (also sent via email)
+        Cloud SQL:
+        Query: SELECT count(*) FROM users WHERE status = 'INVALID';
+        Expected: 15 rows
+        
+        Or: See attachment pre-check.js / pre-check.sql (also sent via email)
       render: shell
 
   - type: textarea
     id: modification_script
     attributes:
       label: "Modification Script / Command"
-      description: "Exact script or Redis command to execute. For complex scripts, attach the file (.js/.sh) to this issue or send via email — we will execute the file directly."
+      description: "Exact script, Redis command, or SQL statement to execute. For complex scripts, attach the file (.js/.sh/.sql) to this issue or send via email — we will execute the file directly."
       placeholder: |
         Firestore:
         db.collection('users').where('status', '==', 'INVALID').update({status: 'ACTIVE'})
@@ -237,7 +247,10 @@ body:
         DEL user:abc123:stale_cache
         SET user:abc123:profile '{"name":"new_name"}' EX 3600
         
-        Complex: See attachment fix-status.js (also sent via email)
+        Cloud SQL:
+        UPDATE users SET status = 'ACTIVE' WHERE status = 'INVALID';
+        
+        Complex: See attachment fix-status.js / fix-status.sql (also sent via email)
       render: shell
 
   - type: textarea
@@ -254,7 +267,11 @@ body:
         Command: GET user:abc123:stale_cache
         Expected: (nil)
         
-        Or: See attachment post-check.js (also sent via email)
+        Cloud SQL:
+        Query: SELECT count(*) FROM users WHERE status = 'INVALID';
+        Expected: 0 rows
+        
+        Or: See attachment post-check.js / post-check.sql (also sent via email)
       render: shell
 
   - type: dropdown
@@ -291,6 +308,10 @@ body:
         Redis:
         1. Cache will auto-rebuild on next access; no data loss
         2. Or: SET user:abc123:profile '<original_value>' EX 3600
+        
+        Cloud SQL:
+        1. Backup table before modification: CREATE TABLE users_backup AS SELECT * FROM users WHERE status = 'INVALID';
+        2. Rollback: UPDATE users SET status = 'INVALID' FROM users_backup WHERE users.id = users_backup.id;
       render: shell
 
   - type: input
@@ -298,7 +319,7 @@ body:
     attributes:
       label: "Affected Scope"
       description: "For write requests: how many documents/keys/records will be affected?"
-      placeholder: "e.g., 15 Firestore documents, 50 Redis keys, 1 user record"
+      placeholder: "e.g., 15 Firestore documents, 50 Redis keys, 100 SQL rows, 1 user record"
 
   - type: markdown
     attributes:
