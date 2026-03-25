@@ -12,7 +12,7 @@ body:
         **Instructions:**
         1. Update the title to match the release date: `[RELEASE] stg-YYYYMMDD`
         2. PRs must already be merged to `develop` branch
-        3. If any services need only Nacos config updated in PROD (without code change), select them from the **Nacos Change Only Services** dropdown below, then manually trigger [Ninja Service Release](https://github.com/aidd-agex/gitops/actions/workflows/ninja-service-release.yml) with the same services in the `nacos-change-only-services` input
+        3. If any services need only Nacos config updated (without code change), select them from the **Nacos Change Only Services** dropdown below, then add label `nacos-sync` to trigger the sync workflow
         4. Add label `release:plan` to trigger the automation
         5. The workflow will automatically:
            - Create branch `stg-YYYYMMDD` from `stg`
@@ -27,16 +27,22 @@ body:
       label: Nacos Change Only Services
       description: |
         Select services that need nacos config updated in PROD **without** changing their code version.
-        These services will have their nacos sync job re-run, and `nacosJobName` in their prod values.yaml will be updated.
+        After selecting, add label `nacos-sync` to this issue to trigger the sync workflow.
+        The workflow will deploy nacos config and automatically clear this dropdown when done.
       multiple: true
       options:
         - ninja-agent-store-service
         - ninja-api-service
         - ninja-audio-service
+        - ninja-billing-service
+        - ninja-chat-service
         - ninja-file-service
         - ninja-gateway
         - ninja-notification-service
+        - ninja-payment-service
+        - ninja-platform-service
         - ninja-schedule-service
+        - ninja-subscription-service
         - ninja-user-service
     validations:
       required: false
