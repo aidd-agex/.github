@@ -16,13 +16,17 @@ body:
         
         **👥 Approval flow:** Peer review (team member) → Team Lead approval → Platform team execution.
         
-        **🔄 Auto-revocation:** All non-platform prod DB access is automatically revoked every day at 19:00 JST. If you need access beyond that, select the appropriate duration below.
+        **📋 Access policy:**
+        - **Read requests:** You may be granted temporary read-only access, or Platform team can execute the query and post results.
+        - **Write requests:** All write operations are executed **exclusively by Platform team members**. Developers will NOT be granted write access under any circumstances. Provide the exact query/script in this template and Platform team will execute it on your behalf.
+        
+        **🔄 Auto-revocation:** All non-platform prod DB read access is automatically revoked every day at 19:00 JST. If you need access beyond that, select the appropriate duration below.
 
   - type: dropdown
     id: request_type
     attributes:
       label: Request Type
-      description: "Read = query only; Write = create/update/delete data"
+      description: "Read = query only (you may get temporary read access); Write = create/update/delete data (Platform team executes — no personal write access granted)"
       options:
         - Read
         - Write
@@ -73,11 +77,11 @@ body:
     id: access_duration
     attributes:
       label: "Access Duration"
-      description: "How long do you need direct prod DB access? 'Platform execution only' means you do NOT need personal access — Platform team runs the query and posts results. All access is auto-revoked daily at 19:00 JST."
+      description: "For Read requests: how long do you need temporary read access? For Write requests: must select 'Platform execution only' — developers are not granted write access. All read access is auto-revoked daily at 19:00 JST."
       options:
         - "Platform execution only (no personal access needed)"
-        - "Same day (revoked at tonight's 19:00 JST cleanup)"
-        - "Multiple days (specify end date in field below)"
+        - "Read only — Same day (revoked at tonight's 19:00 JST cleanup)"
+        - "Read only — Multiple days (specify end date in field below)"
     validations:
       required: true
 
@@ -85,7 +89,7 @@ body:
     id: access_expiry
     attributes:
       label: "Access Expiry Date (if multiple days)"
-      description: "Only fill this if you selected 'Multiple days' above. Access will be revoked on this date at 19:00 JST."
+      description: "Only fill this if you selected 'Read only — Multiple days' above. Read access will be revoked on this date at 19:00 JST. Not applicable for write requests."
       placeholder: "e.g., 2026-03-21"
 
   - type: input
@@ -212,6 +216,8 @@ body:
       value: |
         ### ✏️ Write Request Details
         **Fill this section only if Request Type = Write.** Leave blank for read-only requests.
+        
+        **⚠️ All write operations are executed by Platform team members only.** Provide the exact query/script below — Platform team will execute it, verify results, and post them on this issue.
 
   - type: textarea
     id: pre_execution_query
@@ -336,6 +342,6 @@ body:
         - [ ] (Write) Script tested in lower environment
         - [ ] (Write) Rollback plan is viable
         - [ ] (Write) Pre/post verification queries provided
-        - [ ] Executed and results posted
-        - [ ] Access granted (if personal access requested)
-        - [ ] Access revoked / confirmed auto-revoked
+        - [ ] (Write) Platform team executed script and posted pre/post verification results
+        - [ ] (Read) Temporary read-only access granted (if personal access requested)
+        - [ ] (Read) Access revoked / confirmed auto-revoked
