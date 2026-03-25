@@ -12,7 +12,7 @@ body:
         **Instructions:**
         1. Update the title to match the release date: `[RELEASE] stg-YYYYMMDD`
         2. PRs must already be merged to `develop` branch
-        3. If any services need only Nacos config updated in PROD (without code change), select them from the **Nacos Change Only Services** dropdown below, then add label `nacos-sync` to trigger the sync workflow
+        3. If any services need only Nacos config updated (without code change), select them from the **Nacos Change Only Services** dropdown below, then add label `nacos-sync` to trigger the sync workflow
         4. Add label `release:plan` to trigger the automation
         5. The workflow will automatically:
            - Create branch `stg-YYYYMMDD` from `stg`
@@ -34,10 +34,15 @@ body:
         - ninja-agent-store-service
         - ninja-api-service
         - ninja-audio-service
+        - ninja-billing-service
+        - ninja-chat-service
         - ninja-file-service
         - ninja-gateway
         - ninja-notification-service
+        - ninja-payment-service
+        - ninja-platform-service
         - ninja-schedule-service
+        - ninja-subscription-service
         - ninja-user-service
     validations:
       required: false
