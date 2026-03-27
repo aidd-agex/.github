@@ -107,9 +107,9 @@ body:
       label: "Team Lead Approval"
       description: "Select the Team Lead who approved this request"
       options:
-        - mengjie01-rakuten
-        - liuhanlin01-rakuten
-        - wangdonghui01-rakuten
+        - jie.meng@rakuten.com
+        - hanlin.liu@rakuten.com
+        - donghui.a.wang@rakuten.com
     validations:
       required: true
 
