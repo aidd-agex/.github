@@ -22,6 +22,15 @@ body:
         
         **🔄 Auto-revocation:** All non-platform prod DB read access is automatically revoked every day at 19:00 JST. If you need access beyond that, select the appropriate duration below.
 
+  - type: input
+    id: requester_email
+    attributes:
+      label: "Requester"
+      description: "Email of the person who needs the database access"
+      placeholder: "e.g., firstname.lastname@rakuten.com"
+    validations:
+      required: true
+
   - type: dropdown
     id: request_type
     attributes:
