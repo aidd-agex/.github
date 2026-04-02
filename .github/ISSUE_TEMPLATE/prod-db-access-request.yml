@@ -119,6 +119,7 @@ body:
         - jie.meng@rakuten.com
         - hanlin.liu@rakuten.com
         - donghui.a.wang@rakuten.com
+        - yuxi.wu@rakuten.com
     validations:
       required: true
 
