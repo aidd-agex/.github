@@ -36,6 +36,7 @@ body:
         - ninja-audio-service
         - ninja-billing-service
         - ninja-chat-service
+        - ninja-crawler-service
         - ninja-file-service
         - ninja-gateway
         - ninja-notification-service
