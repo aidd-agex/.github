@@ -12,7 +12,7 @@ body:
         **Instructions:**
         1. Update the title to match the release date: `[RELEASE] stg-YYYYMMDD`
         2. PRs must already be merged to `develop` branch
-        3. If any services need only Nacos config updated (without code change), select them from the **Nacos Change Only Services** dropdown below, then add label `nacos-sync` to trigger the sync workflow
+        3. If any services need only Nacos config updated (without code change), select them from the **Nacos Change Only Services** dropdown below, then add label `release:nacos-only:stg` or `release:nacos-only:prod` to trigger the sync workflow
         4. Add label `release:plan` to trigger the automation
         5. The workflow will automatically:
            - Create branch `stg-YYYYMMDD` from `stg`
@@ -26,9 +26,8 @@ body:
     attributes:
       label: Nacos Change Only Services
       description: |
-        Select services that need nacos config updated in PROD **without** changing their code version.
-        After selecting, add label `nacos-sync` to this issue to trigger the sync workflow.
-        The workflow will deploy nacos config and automatically clear this dropdown when done.
+        Services that need nacos config updated **without** code change. After selecting, add label `release:nacos-only:stg` or `release:nacos-only:prod` to trigger the sync. Dropdown auto-clears on success.
+        On re-edit (no dropdown UI after issue is created), replace `_No response_` with comma-separated services, e.g. `ninja-chat-service, ninja-user-service`.
       multiple: true
       options:
         - ninja-agent-store-service
