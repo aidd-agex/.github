@@ -64,8 +64,12 @@ body:
         - "Firestore: memory-service-prod"
         - "Firestore: growthbook-prod"
         - "Redis: prod instance"
+        - "Cloud SQL: prod-psql / airflow_prod"
+        - "Cloud SQL: prod-psql / audio-service-prod"
         - "Cloud SQL: prod-psql / litellm"
         - "Cloud SQL: prod-psql / avatar"
+        - "Cloud SQL: prod-psql / file-service-prod"
+        - "Cloud SQL: prod-psql / user-service-prod"
         - "Other (specify in Reason / Background)"
     validations:
       required: true
