@@ -257,8 +257,7 @@ body:
       description: "Which Azure subscription?"
       options:
         - "N/A (GCP only)"
-        - "RASIA-Development"
-        - "RASIA-Production"
+        - "sub-az-compliant-agex-stg"
         - "Other (specify in Details)"
 
   - type: input
