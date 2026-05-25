@@ -124,7 +124,6 @@ body:
         - hanlin.liu@rakuten.com
         - donghui.a.wang@rakuten.com
         - yuxi.wu@rakuten.com
-        - yuan.ma@rakuten.com
     validations:
       required: true
 
