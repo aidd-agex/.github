@@ -1,0 +1,304 @@
+name: Cloud Permission Request
+description: Request permission changes on GCP or Microsoft Azure (role assignment, permission grant, API enablement, resource creation, etc.)
+title: "[Cloud Permission]: "
+labels: [cloud-permission-request]
+assignees: []
+
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Cloud Permission Request
+
+        Use this form to request any permission or access change on **GCP** or **Microsoft Azure**.
+
+        **Approval flow:** Team Lead approval → Platform team review & execution.
+
+        **What this covers:**
+        - Assign yourself to a different IAM role group (e.g., Dev → DataDev)
+        - Request additional permissions for your account beyond your current role
+        - Request a new permission be added to an existing role group (affects all members)
+        - Enable a GCP API / Azure service
+        - Create or modify cloud resources (Cloud SQL, Redis, VM, Storage, etc.)
+        - Network changes (Cloud Armor whitelist, Firewall rules, etc.)
+        - Azure RBAC role assignment or resource group access
+
+        **⚠️ This form is NOT for production database access.** Use the [Prod DB Access Request](https://github.com/aidd-agex/.github/issues/new?template=prod-db-access-request.yml) template instead.
+
+  - type: input
+    id: requester_email
+    attributes:
+      label: "Requester"
+      description: "Email of the person requesting the permission change"
+      placeholder: "e.g., firstname.lastname@rakuten.com"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: cloud_provider
+    attributes:
+      label: Cloud Provider
+      description: "Which cloud platform?"
+      options:
+        - GCP (Google Cloud Platform)
+        - Microsoft Azure
+        - Both
+    validations:
+      required: true
+
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Request Type
+      description: "What kind of permission change do you need?"
+      options:
+        - "Role Group Change — assign me to a different GCP role group"
+        - "Individual Permission — grant me additional permissions beyond my current role"
+        - "Role Group Permission — add a new permission to an existing role group (affects all members)"
+        - "API / Service Enablement — enable a GCP API or Azure service on the project"
+        - "Resource Creation — create a new cloud resource (DB, VM, bucket, etc.)"
+        - "Network / Security Change — Cloud Armor, Firewall, VPN, ACL, etc."
+        - "Azure RBAC — assign or modify an Azure role"
+        - "Other (describe in Details)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: gcp_project
+    attributes:
+      label: "GCP Project (if applicable)"
+      description: "Which GCP project does this apply to? Select N/A for Azure-only requests."
+      options:
+        - "ai-core-ux"
+        - "N/A (Azure only)"
+        - "Other (specify in Details)"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: "---"
+
+  - type: markdown
+    attributes:
+      value: |
+        ### GCP Role Group Reference
+
+        The following role groups are defined in `gcp-manager/iam/terraform/`. Each user belongs to one primary group.
+
+        | Group | Role | Scope |
+        |-------|------|-------|
+        | **Dev** | DevRole | Logs, Traces, Metrics, Firestore/SQL/GCS (nonprod rw, prod ro), BigQuery rw, GKE pod management |
+        | **DataDev** | DataDevRole | DevRole + BigQuery Admin, Pub/Sub Admin, Cloud Functions, Looker Studio |
+        | **NonDev** | NonDevRole | Browser, Logs/Trace/Metrics (read-only), GKE viewer, Compute viewer |
+        | **DataScience** | DataScienceRole | NonDevRole + IAP tunnel, BigQuery rw, GCS read |
+        | **Infra** | InfraRole | DataDevRole + Cloud Functions/Run/Deploy Admin, GKE Admin, Compute Admin |
+        | **HR** | HrRole | Browser + designated GCS folder access |
+        | **Platform** | Owner | Full project owner access |
+
+  - type: dropdown
+    id: current_group
+    attributes:
+      label: "Your Current GCP Role Group (if applicable)"
+      description: "Which group are you currently in? Check gcp-manager/iam/terraform/groups.tf if unsure."
+      options:
+        - "Dev (DevRole)"
+        - "DataDev (DataDevRole)"
+        - "NonDev (NonDevRole)"
+        - "DataScience (DataScienceRole)"
+        - "Infra (InfraRole)"
+        - "HR (HrRole)"
+        - "Platform (Owner)"
+        - "None — not in any group yet"
+        - "N/A (Azure-only request)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target_group
+    attributes:
+      label: "Target GCP Role Group (for Role Group Change requests)"
+      description: "Only fill this if Request Type = 'Role Group Change'. Which group do you want to move to?"
+      options:
+        - "N/A — not a group change request"
+        - "Dev (DevRole)"
+        - "DataDev (DataDevRole)"
+        - "NonDev (NonDevRole)"
+        - "DataScience (DataScienceRole)"
+        - "Infra (InfraRole)"
+        - "HR (HrRole)"
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      description: "Critical = blocking production incident; High = same-day needed; Normal = can wait 1-3 business days"
+      options:
+        - Normal
+        - High
+        - Critical (production incident)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: duration
+    attributes:
+      label: "Access Duration"
+      description: "Is this a permanent or temporary permission change?"
+      options:
+        - "Permanent"
+        - "Temporary — specify end date in Details"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tl_approval
+    attributes:
+      label: "Team Lead Approval"
+      description: "Select the Team Lead who approved this request. For cross-team requests, select the requester's TL."
+      options:
+        - jie.meng@rakuten.com
+        - hanlin.liu@rakuten.com
+        - donghui.a.wang@rakuten.com
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: "---"
+
+  - type: textarea
+    id: details
+    attributes:
+      label: "Request Details"
+      description: |
+        Describe what you need. Be specific — include resource names, permission names, IP addresses, etc.
+        For GCP individual permissions, specify the exact GCP permission or predefined role (e.g., `roles/run.admin` or `cloudsql.instances.connect`).
+        For Azure, specify the subscription, resource group, and role (e.g., `Contributor on rg-my-project`).
+      placeholder: |
+        Examples:
+
+        Role Group Change:
+          I need to move from Dev to DataDev group because I'm now working on data pipelines
+          and need BigQuery Admin + Pub/Sub Admin + Cloud Functions access.
+
+        Individual Permission:
+          I need `roles/run.admin` on ai-core-ux to deploy and manage Cloud Run services
+          for the ai-cloud-runner project. My current DevRole only has run.services.get/list.
+
+        Role Group Permission:
+          Please add `monitoring.alertPolicies.update` to the NonDevRole so QA team
+          can modify alert thresholds during test cycles.
+
+        API Enablement:
+          Please enable the YouTube Data API v3 on project ai-core-ux.
+          Needed for the video summarization feature.
+
+        Resource Creation:
+          Please create a Cloud SQL PostgreSQL instance named `stg-myservice` in ai-core-ux
+          with 2 vCPU / 8GB RAM for the staging environment.
+
+        Network / Security:
+          Please add IP 203.0.113.50 to Cloud Armor policy `allow-intra-web-access`
+          for store access to STG avatar services.
+
+        Azure RBAC:
+          Please assign me Contributor role on resource group `rg-llm-inference`
+          in subscription `RASIA-Production`. I need to manage Azure OpenAI deployments.
+    validations:
+      required: true
+
+  - type: textarea
+    id: justification
+    attributes:
+      label: "Business Justification"
+      description: "Why do you need this permission? What task or project requires it?"
+      placeholder: |
+        e.g., Working on the Travel Bridge integration which requires Cloud Run deployment
+        and BigQuery data pipeline access. Current DevRole permissions are insufficient.
+    validations:
+      required: true
+
+  - type: input
+    id: related_issue
+    attributes:
+      label: "Related Issue / Project"
+      description: "Link to the task, project, or ticket that requires this permission"
+      placeholder: "e.g., ninja#1234, JIRA-567, or project name"
+
+  - type: dropdown
+    id: scope_impact
+    attributes:
+      label: "Scope of Impact"
+      description: "Who does this change affect?"
+      options:
+        - "Only me (individual permission grant)"
+        - "My entire role group (role group permission change)"
+        - "A specific resource only (resource-level binding)"
+        - "Project-wide (API enablement, resource creation, etc.)"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: "---"
+
+  - type: markdown
+    attributes:
+      value: |
+        ### Azure-Specific Fields
+        **Fill this section only for Azure requests.** Leave blank for GCP-only requests.
+
+  - type: dropdown
+    id: azure_subscription
+    attributes:
+      label: "Azure Subscription (if applicable)"
+      description: "Which Azure subscription?"
+      options:
+        - "N/A (GCP only)"
+        - "RASIA-Development"
+        - "RASIA-Production"
+        - "Other (specify in Details)"
+
+  - type: input
+    id: azure_resource_group
+    attributes:
+      label: "Azure Resource Group (if applicable)"
+      description: "Which resource group does this apply to?"
+      placeholder: "e.g., rg-llm-inference, rg-ai-platform"
+
+  - type: dropdown
+    id: azure_role
+    attributes:
+      label: "Azure RBAC Role (if applicable)"
+      description: "Which Azure role do you need?"
+      options:
+        - "N/A (GCP only)"
+        - "Reader"
+        - "Contributor"
+        - "Owner (requires additional justification)"
+        - "User Access Administrator"
+        - "Custom / Other (specify in Details)"
+
+  - type: markdown
+    attributes:
+      value: "---"
+
+  - type: markdown
+    attributes:
+      value: |
+        ### Review Checklist (for Platform team)
+        - [ ] Request is justified and appropriate for the requester's role
+        - [ ] Team Lead has approved
+        - [ ] Scope of change is minimal (least privilege principle)
+        - [ ] (Role Group Change) User removed from old group, added to new group in `groups.tf`
+        - [ ] (Individual Permission) Binding added in `group-bindings.tf` with appropriate conditions
+        - [ ] (Role Group Permission) Custom role updated in `custom-roles.tf`, impact on all group members reviewed
+        - [ ] (API Enablement) API enabled and documented
+        - [ ] (Resource Creation) Resource created, access granted, documented
+        - [ ] (Network Change) Firewall/Armor rule added, tested, documented
+        - [ ] (Azure) RBAC role assigned, verified in Azure Portal
+        - [ ] (Temporary) Expiry date noted, calendar reminder set for revocation
+        - [ ] Terraform applied successfully (for GCP changes via gcp-manager)
+        - [ ] Requester notified of completion
