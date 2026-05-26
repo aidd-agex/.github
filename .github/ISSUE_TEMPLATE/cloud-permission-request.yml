@@ -161,6 +161,8 @@ body:
         - jie.meng@rakuten.com
         - hanlin.liu@rakuten.com
         - donghui.a.wang@rakuten.com
+        - xin.g.liu@rakuten.com
+        - zhe.b.liu@rakuten.com
     validations:
       required: true
 
