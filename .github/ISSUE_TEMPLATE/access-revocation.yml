@@ -1,7 +1,7 @@
 name: Access Revocation
 description: Revoke all access for a departing team member — GCP IAM, GitHub org, org secrets.
-title: "[Offboarding]: "
-labels: [offboarding]
+title: "[Revocation]: "
+labels: [revocation]
 assignees: []
 
 body:
