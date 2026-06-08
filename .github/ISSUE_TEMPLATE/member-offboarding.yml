@@ -1,0 +1,83 @@
+name: Member Offboarding
+description: Revoke all access for a departing team member — GCP IAM, GitHub org, org secrets.
+title: "[Offboarding]: "
+labels: [offboarding]
+assignees: []
+
+body:
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Member Offboarding Request
+
+        Submit the departing member's **Rakuten email** — the automation will handle the rest:
+        - Identify their GCP role group from `groups.tf`
+        - Look up their GitHub username from the org member list
+        - Revoke all GCP IAM bindings across all projects
+        - Remove from `groups.tf` via PR (keeps Terraform state consistent)
+        - Remove from GitHub org
+        - Delete the org secret `PAT_USER_<GITHUB_USERNAME_WITHOUT_SUFFIX>` (e.g., user `johndoe-rakuten` → `PAT_USER_JOHNDOE`)
+
+        **⚠️ This form should only be submitted by a Team Lead or Manager.**
+
+  - type: input
+    id: departing_member_email
+    attributes:
+      label: "Departing Member Email"
+      description: "Rakuten email address — must match the email in groups.tf"
+      placeholder: "e.g., john.doe@rakuten.com"
+    validations:
+      required: true
+
+  - type: input
+    id: last_working_day
+    attributes:
+      label: "Last Working Day"
+      description: "Access will be revoked on or before this date"
+      placeholder: "e.g., 2026-06-30"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: requester
+    attributes:
+      label: "Submitted By (Team Lead)"
+      options:
+        - jie.meng@rakuten.com
+        - hanlin.liu@rakuten.com
+        - donghui.a.wang@rakuten.com
+        - chunhai.a.li@rakuten.com
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional_notes
+    attributes:
+      label: "Additional Notes (optional)"
+      description: "Any special considerations — external service access, repo ownership handover, etc."
+      placeholder: |
+        e.g.:
+        - Member was sole maintainer of repo ABC — handover to @someone
+        - Member had access to external SaaS tool XYZ
+
+  - type: markdown
+    attributes:
+      value: "---"
+
+  - type: markdown
+    attributes:
+      value: |
+        ### Offboarding Checklist (for Platform team — auto-checked by workflow)
+
+        **Automated:**
+        - [ ] GCP IAM bindings revoked across all projects (ai-core-ux, gdsp-dev, gdsp-prod)
+        - [ ] User removed from `groups.tf` (PR created)
+        - [ ] User removed from GitHub org `aidd-agex`
+        - [ ] Org secret `PAT_USER_<USERNAME>` deleted (suffix like `-rakuten` is stripped)
+
+        **Manual verification:**
+        - [ ] Merge the `groups.tf` PR (keeps Terraform state in sync)
+        - [ ] Verify no remaining IAM bindings
+        - [ ] Revoke Azure access (if applicable)
+        - [ ] Confirm with IT that corporate account is disabled
