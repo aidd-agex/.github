@@ -1,4 +1,4 @@
-name: Member Offboarding
+name: Access Revocation
 description: Revoke all access for a departing team member — GCP IAM, GitHub org, org secrets.
 title: "[Offboarding]: "
 labels: [offboarding]
@@ -9,7 +9,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## Member Offboarding Request
+        ## Access Revocation Request
 
         Submit the departing member's **Rakuten email** — the automation will handle the rest:
         - Identify their GCP role group from `groups.tf`
