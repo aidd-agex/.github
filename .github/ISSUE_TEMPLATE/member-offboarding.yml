@@ -71,7 +71,7 @@ body:
         ### Offboarding Checklist (for Platform team — auto-checked by workflow)
 
         **Automated:**
-        - [ ] GCP IAM bindings revoked across all projects (ai-core-ux, gdsp-dev, gdsp-prod)
+        - [ ] GCP IAM bindings revoked (ai-core-ux)
         - [ ] User removed from `groups.tf` (PR created)
         - [ ] User removed from GitHub org `aidd-agex`
         - [ ] Org secret `PAT_USER_<USERNAME>` deleted (suffix like `-rakuten` is stripped)
