@@ -11,4 +11,12 @@ contact_links:
       - Subtask: Atomic work item (e.g., "Implement password validation")
       
       Always link child issues to their parent using the parent fields.
+  - name: 🚪 Member Offboarding Guide
+    url: https://github.com/aidd-agex/gcp-manager/blob/main/iam/terraform/README.md
+    about: |
+      When a team member departs, use the "Member Offboarding" issue template to initiate
+      the full access revocation process (GCP IAM, GitHub org, secrets, Azure).
+      
+      The offboarding workflow will automatically create a groups.tf PR and revoke
+      direct IAM bindings. Manual steps include merging the PR and auditing org secrets.
 
