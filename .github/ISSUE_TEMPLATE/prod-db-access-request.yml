@@ -1,5 +1,5 @@
 name: Prod DB Access Request
-description: Request read or write access to production databases (Firestore / Redis / Cloud SQL)
+description: Request read or write access to production databases (Firestore / Redis / Cloud SQL / AlloyDB)
 title: "[Prod DB]: "
 labels: [prod-db-request]
 assignees: []
@@ -10,7 +10,7 @@ body:
     attributes:
       value: |
         ## 🔒 Production Database Access Request
-        Production databases (Firestore, Redis & Cloud SQL) are restricted to the Platform team. Use this form to request data access for debugging, investigation, or data fixes.
+        Production databases (Firestore, Redis, Cloud SQL & AlloyDB) are restricted to the Platform team. Use this form to request data access for debugging, investigation, or data fixes.
         
         **⚠️ Before submitting:** Confirm that this cannot be resolved using dev/stg environments.
         
@@ -51,6 +51,7 @@ body:
         - Firestore
         - Redis (Memorystore)
         - Cloud SQL (PostgreSQL)
+        - AlloyDB (PostgreSQL)
     validations:
       required: true
 
@@ -70,6 +71,7 @@ body:
         - "Cloud SQL: prod-psql / avatar"
         - "Cloud SQL: prod-psql / file-service-prod"
         - "Cloud SQL: prod-psql / user-service-prod"
+        - "AlloyDB: r-memory-prod-cluster / r-memory-prod"
         - "Other (specify in Reason / Background)"
     validations:
       required: true
@@ -185,7 +187,7 @@ body:
     id: query
     attributes:
       label: "Query / Command"
-      description: "Firestore: collection path or query. Redis: key pattern or command. Cloud SQL: SQL query. For complex scripts, write 'See attachment' and attach the file or send via email."
+      description: "Firestore: collection path or query. Redis: key pattern or command. Cloud SQL / AlloyDB: SQL query. For complex scripts, write 'See attachment' and attach the file or send via email. **If you only need read access permissions (no specific query to execute), leave this blank.**"
       placeholder: |
         Firestore example:
         db.collection('users').doc('abc123').collection('conversations').get()
@@ -194,22 +196,24 @@ body:
         GET user:abc123:profile
         HGETALL session:abc123
         
-        Cloud SQL example:
+        Cloud SQL / AlloyDB example:
         SELECT id, status FROM users WHERE created_at > '2026-01-01' LIMIT 100;
         
         Complex: See attachment query.js / query.sql (also sent via email)
+        
+        Access only: Leave blank if you only need read permissions without a specific query.
       render: shell
     validations:
-      required: true
+      required: false
 
   - type: textarea
     id: expected_results
     attributes:
       label: "Expected Results"
-      description: "What data do you expect to see? This helps us verify correctness."
+      description: "What data do you expect to see? This helps us verify correctness. **Leave blank if you only need read access permissions.**"
       placeholder: "e.g., Should return 1 document with fields: name, email, status"
     validations:
-      required: true
+      required: false
 
   - type: dropdown
     id: pii
@@ -248,7 +252,7 @@ body:
         Command: GET user:abc123:profile
         Expected: {"name":"old_name","status":"active"}
         
-        Cloud SQL:
+        Cloud SQL / AlloyDB:
         Query: SELECT count(*) FROM users WHERE status = 'INVALID';
         Expected: 15 rows
         
@@ -268,7 +272,7 @@ body:
         DEL user:abc123:stale_cache
         SET user:abc123:profile '{"name":"new_name"}' EX 3600
         
-        Cloud SQL:
+        Cloud SQL / AlloyDB:
         UPDATE users SET status = 'ACTIVE' WHERE status = 'INVALID';
         
         Complex: See attachment fix-status.js / fix-status.sql (also sent via email)
@@ -288,7 +292,7 @@ body:
         Command: GET user:abc123:stale_cache
         Expected: (nil)
         
-        Cloud SQL:
+        Cloud SQL / AlloyDB:
         Query: SELECT count(*) FROM users WHERE status = 'INVALID';
         Expected: 0 rows
         
@@ -330,7 +334,7 @@ body:
         1. Cache will auto-rebuild on next access; no data loss
         2. Or: SET user:abc123:profile '<original_value>' EX 3600
         
-        Cloud SQL:
+        Cloud SQL / AlloyDB:
         1. Backup table before modification: CREATE TABLE users_backup AS SELECT * FROM users WHERE status = 'INVALID';
         2. Rollback: UPDATE users SET status = 'INVALID' FROM users_backup WHERE users.id = users_backup.id;
       render: shell
