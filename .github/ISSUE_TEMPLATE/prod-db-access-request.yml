@@ -1,5 +1,5 @@
-name: Prod DB Access Request
-description: Request read or write access to production databases (Firestore / Redis / Cloud SQL / AlloyDB)
+name: Prod DB / Platform Access Request
+description: Request read or write access to production databases (Firestore / Redis / Cloud SQL / AlloyDB) or to edit Growthbook production experiment configuration
 title: "[Prod DB]: "
 labels: [prod-db-request]
 assignees: []
@@ -9,18 +9,19 @@ body:
   - type: markdown
     attributes:
       value: |
-        ## 🔒 Production Database Access Request
-        Production databases (Firestore, Redis, Cloud SQL & AlloyDB) are restricted to the Platform team. Use this form to request data access for debugging, investigation, or data fixes.
+        ## 🔒 Production Database / Platform Access Request
+        Production datastores (Firestore, Redis, Cloud SQL, AlloyDB) and the production Growthbook platform are restricted to the Platform team. Use this form to request access for debugging, investigation, data fixes, or Growthbook experiment configuration changes.
         
         **⚠️ Before submitting:** Confirm that this cannot be resolved using dev/stg environments.
         
         **👥 Approval flow:** Peer review (team member) → Team Lead approval → Platform team execution.
         
         **📋 Access policy:**
-        - **Read requests:** You may be granted temporary read-only access, or Platform team can execute the query and post results.
-        - **Write requests:** All write operations are executed **exclusively by Platform team members**. Developers will NOT be granted write access under any circumstances. Provide the exact query/script in this template and Platform team will execute it on your behalf.
+        - **Read requests (databases):** You may be granted temporary read-only access, or Platform team can execute the query and post results.
+        - **Write requests (databases):** All write operations are executed **exclusively by Platform team members**. Developers will NOT be granted write access under any circumstances. Provide the exact query/script in this template and Platform team will execute it on your behalf.
+        - **Growthbook production experiment configuration edit:** Submitted per-change. Developers do NOT receive persistent editor access on the production Growthbook project. Describe the exact change (create / edit / start / stop / archive / change targeting or rollout) in the Growthbook section below and the Platform team will execute it on your behalf.
         
-        **🔄 Auto-revocation:** All non-platform prod DB read access is automatically revoked every day at 19:00 JST. If you need access beyond that, select the appropriate duration below.
+        **🔄 Auto-revocation:** All non-platform prod DB read access is automatically revoked every day at 19:00 JST. If you need access beyond that, select the appropriate duration below. Growthbook changes are one-shot and do not grant any standing access.
 
   - type: input
     id: requester_email
@@ -35,31 +36,33 @@ body:
     id: request_type
     attributes:
       label: Request Type
-      description: "Read = query only (you may get temporary read access); Write = create/update/delete data (Platform team executes — no personal write access granted)"
+      description: "Read = query only (you may get temporary read access); Write = create/update/delete data (Platform team executes — no personal write access granted); Growthbook config edit = per-change experiment configuration change (Platform team executes — no persistent editor access granted)"
       options:
         - Read
         - Write
+        - Growthbook config edit
     validations:
       required: true
 
   - type: dropdown
     id: datastore_type
     attributes:
-      label: Data Store Type
-      description: "Which type of production data store?"
+      label: Data Store / Platform Type
+      description: "Which type of production target? Select 'Growthbook (experiment configuration)' when the request is to edit the production Growthbook project (feature flags, experiments, targeting, rollout, etc.)."
       options:
         - Firestore
         - Redis (Memorystore)
         - Cloud SQL (PostgreSQL)
         - AlloyDB (PostgreSQL)
+        - Growthbook (experiment configuration)
     validations:
       required: true
 
   - type: dropdown
     id: database
     attributes:
-      label: Target Database / Instance
-      description: "Which production database or Redis instance? Select 'Other' if not listed."
+      label: Target Database / Instance / Project
+      description: "Which production database, Redis instance, or Growthbook project? Select 'Other' if not listed."
       options:
         - "Firestore: ai-service-prod"
         - "Firestore: memory-service-prod"
@@ -72,6 +75,7 @@ body:
         - "Cloud SQL: prod-psql / file-service-prod"
         - "Cloud SQL: prod-psql / user-service-prod"
         - "AlloyDB: r-memory-prod-cluster / r-memory-prod"
+        - "Growthbook: prod project"
         - "Other (specify in Reason / Background)"
     validations:
       required: true
@@ -92,7 +96,7 @@ body:
     id: access_duration
     attributes:
       label: "Access Duration"
-      description: "For Read requests: how long do you need temporary read access? For Write requests: must select 'Platform execution only' — developers are not granted write access. All read access is auto-revoked daily at 19:00 JST."
+      description: "For Read requests: how long do you need temporary read access? For Write and Growthbook config edit requests: must select 'Platform execution only' — developers are not granted write/editor access. All read access is auto-revoked daily at 19:00 JST."
       options:
         - "Platform execution only (no personal access needed)"
         - "Read only — Same day (revoked at tonight's 19:00 JST cleanup)"
@@ -352,9 +356,98 @@ body:
   - type: markdown
     attributes:
       value: |
+        ### 🧪 Growthbook Experiment Configuration Change
+        **Fill this section only if Request Type = Growthbook config edit.** Leave blank for database read/write requests.
+        
+        **⚠️ All production Growthbook configuration changes are executed by the Platform team.** Describe the exact change below — Platform team will perform it on the production Growthbook project, verify the resulting state, and post a screenshot/link on this issue.
+
+  - type: dropdown
+    id: gb_change_type
+    attributes:
+      label: "Growthbook Change Type"
+      description: "What kind of configuration change is being requested?"
+      options:
+        - "Create new experiment / feature flag"
+        - "Edit experiment metadata (name, hypothesis, description)"
+        - "Change targeting / audience / attribute rules"
+        - "Change traffic split / variation weights"
+        - "Start experiment (phase transition)"
+        - "Stop / pause experiment"
+        - "Archive / delete experiment"
+        - "Edit feature flag value / default / override"
+        - "Other (describe below)"
+    validations:
+      required: false
+
+  - type: input
+    id: gb_experiment_id
+    attributes:
+      label: "Experiment / Feature Key"
+      description: "Growthbook experiment key, feature key, or URL of the item being modified. Required for all edits to existing items."
+      placeholder: "e.g., exp_homepage_card_ranking_v2 or https://growthbook.../features/foo"
+    validations:
+      required: false
+
+  - type: textarea
+    id: gb_current_state
+    attributes:
+      label: "Current Configuration (before change)"
+      description: "Describe or paste the current Growthbook configuration (targeting rules, variation weights, status, etc.). Screenshot of the current state is strongly encouraged. For a brand-new experiment, write 'N/A — new experiment'."
+      placeholder: |
+        Example:
+          Status: running
+          Targeting: country IN [JP, US], app_version >= 1.4.0
+          Variations: control 50% / treatment 50%
+          Current primary metric: homepage_card_click_rate
+        
+        Or: screenshot attached (growthbook-before.png)
+      render: shell
+
+  - type: textarea
+    id: gb_requested_change
+    attributes:
+      label: "Requested Change (exact new configuration)"
+      description: "Describe the exact change to apply. Be precise — Platform team will apply this verbatim. Include the final target state (after the change)."
+      placeholder: |
+        Example:
+          Change traffic split from 50/50 to 90/10 (control 90%, treatment 10%).
+          Add targeting rule: user_segment IN [internal_pilot].
+          Primary metric unchanged.
+        
+        Final state after change:
+          Variations: control 90% / treatment 10%
+          Targeting: country IN [JP, US], app_version >= 1.4.0, user_segment IN [internal_pilot]
+      render: shell
+
+  - type: textarea
+    id: gb_rollback
+    attributes:
+      label: "Rollback Plan"
+      description: "How to revert if something goes wrong (e.g., restore previous targeting / variation weights, stop the experiment, revert feature flag default)."
+      placeholder: |
+        Example:
+          Revert variation weights to control 50% / treatment 50%.
+          Remove the newly added targeting rule.
+          Or: stop the experiment immediately via the Stop button.
+      render: shell
+
+  - type: input
+    id: gb_launch_window
+    attributes:
+      label: "Preferred Change Window"
+      description: "When should the change be applied? Consider traffic / release windows."
+      placeholder: "e.g., ASAP (no release today), 2026-10-15 10:00 JST, after today's release"
+
+  - type: markdown
+    attributes:
+      value: "---"
+
+  - type: markdown
+    attributes:
+      value: |
         ### ℹ️ Review Checklist (for Platform team)
         - [ ] Request is necessary (cannot be resolved in dev/stg)
-        - [ ] Query scope is appropriate (not overly broad)
+        - [ ] Query / change scope is appropriate (not overly broad)
         - [ ] Peer reviewed by team member
         - [ ] Team Lead has approved
         - [ ] (Write) Script tested in lower environment
@@ -363,3 +456,6 @@ body:
         - [ ] (Write) Platform team executed script and posted pre/post verification results
         - [ ] (Read) Temporary read-only access granted (if personal access requested)
         - [ ] (Read) Access revoked / confirmed auto-revoked
+        - [ ] (Growthbook) Current and requested configuration are precisely described
+        - [ ] (Growthbook) Rollback plan is viable
+        - [ ] (Growthbook) Platform team applied the change and posted a screenshot / link of the final state
